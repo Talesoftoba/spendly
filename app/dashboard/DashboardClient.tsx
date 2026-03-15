@@ -6,7 +6,6 @@ import {
   Area,
   PieChart,
   Pie,
-  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -401,18 +400,17 @@ export function DashboardClient({
               <ResponsiveContainer width="100%" height={160}>
                 <PieChart>
                   <Pie
-                    data={categorySpending}
+                    data={categorySpending.map((entry) => ({
+                      ...entry,
+                      fill: entry.color,
+                    }))}
                     cx="50%"
                     cy="50%"
                     innerRadius={50}
                     outerRadius={72}
                     paddingAngle={3}
                     dataKey="value"
-                  >
-                    {categorySpending.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
+                  />
                   <Tooltip
                     formatter={(v) => [formatCurrency(v as number), ""]}
                     contentStyle={{
