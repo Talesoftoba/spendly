@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@import "tailwindcss";
-
 :root {
   --bg-base: #080808;
   --bg-surface: #111111;
@@ -25,6 +23,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 html,
@@ -44,6 +48,7 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
 /* ── Light Theme ──────────────────────────────────────────────── */
 [data-theme="light"] {
   --bg-base: #f0f0ec;
@@ -160,11 +165,6 @@ input:-webkit-autofill:focus {
   color: #7a9900 !important;
 }
 
-/* Scrollbar */
-[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-}
-
 /* Recharts */
 [data-theme="light"] .recharts-cartesian-axis-tick text,
 [data-theme="light"] .recharts-text {
@@ -201,7 +201,7 @@ input:-webkit-autofill:focus {
   background: rgba(0, 0, 0, 0.03) !important;
 }
 
-/* Dark mode select dropdown options */
+/* Select dropdown options */
 select option {
   background: #0f0f0f;
   color: #ffffff;

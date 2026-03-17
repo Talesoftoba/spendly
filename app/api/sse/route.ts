@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
+import { authOptions } from "@/app/lib/auth"; 
 import { getOverBudgetAlerts } from "@/app/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -12,22 +12,32 @@ export async function GET() {
   }
 
   const userId = session.user.id;
+  let closed = false;
 
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
 
       const send = (data: object) => {
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
-        );
+        // Guard — never write to a closed controller
+        if (closed) return;
+        try {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
+          );
+        } catch {
+          // Stream already closed — mark it and stop
+          closed = true;
+        }
       };
 
-      // Tell the client the connection is live
-      send({ type: "connected", message: "Live alerts active" });
-
-      // Check for over budget alerts immediately on connect
       const checkAlerts = async () => {
+        // Stop everything if client disconnected
+        if (closed) {
+          clearInterval(interval);
+          return;
+        }
+
         try {
           const overBudget = await getOverBudgetAlerts(userId);
 
@@ -42,22 +52,27 @@ export async function GET() {
               });
             });
           } else {
-            // Send a heartbeat so the connection stays alive
             send({ type: "heartbeat", timestamp: Date.now() });
           }
         } catch {
-          send({ type: "error", message: "Failed to check alerts" });
+          // DB error — don't crash, just skip this check
         }
       };
 
-      // Run immediately on connect
+      // Send initial connection confirmation
+      send({ type: "connected", message: "Live alerts active" });
+
+      // First check immediately
       await checkAlerts();
 
-      // Then check every 30 seconds
+      // Then every 30 seconds
       const interval = setInterval(checkAlerts, 30_000);
 
-      // Cleanup when client disconnects
-      return () => clearInterval(interval);
+      // This runs when the client disconnects
+      return () => {
+        closed = true;
+        clearInterval(interval);
+      };
     },
   });
 
