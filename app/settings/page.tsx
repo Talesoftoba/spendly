@@ -62,21 +62,21 @@ const handleSave = async () => {
     setSaving(false);
   }
 };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "12px",
-    padding: "12px 16px",
-    color: "var(--text-primary)",
-    caretColor: "var(--text-primary)",
-    WebkitTextFillColor: "var(--text-primary)",
-    fontFamily: "var(--font-dm-mono)",
-    fontSize: "14px",
-    outline: "none",
-    transition: "border-color 0.2s",
-  };
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "12px",
+  padding: "12px 16px",
+  color: "var(--text-primary)",
+  caretColor: "var(--text-primary)",
+  WebkitTextFillColor: "var(--text-primary)",
+  fontFamily: "var(--font-dm-mono)",
+  fontSize: "14px",
+  outline: "none",
+  transition: "border-color 0.2s",
+  appearance: "auto",
+};
 
   const labelStyle: React.CSSProperties = {
     display: "block",

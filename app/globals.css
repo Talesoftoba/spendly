@@ -200,3 +200,20 @@ input:-webkit-autofill:focus {
 [data-theme="light"] [style*="rgba(255, 255, 255, 0.03)"] {
   background: rgba(0, 0, 0, 0.03) !important;
 }
+
+/* Dark mode select dropdown options */
+select option {
+  background: #0f0f0f;
+  color: #ffffff;
+}
+
+[data-theme="dark"] select {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+[data-theme="dark"] select option {
+  background: #0f0f0f;
+  color: #ffffff;
+}
