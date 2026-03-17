@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Syne, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/layout/providers"; 
+import { getServerSession } from "next-auth";
+import { authOptions } from "./lib/auth";
+import { prisma } from "./lib/prisma";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -20,11 +23,26 @@ export const metadata: Metadata = {
   description: "Track your income, expenses and budgets in one place.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch user currency on server so it's available immediately
+  let currency = "USD";
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { currency: true },
+      });
+      if (user?.currency) currency = user.currency;
+    }
+  } catch {
+    // Default to USD if fetch fails
+  }
+
   return (
     <html
       lang="en"
@@ -45,7 +63,7 @@ export default function RootLayout({
             `,
           }}
         />
-        <Providers>{children}</Providers>
+        <Providers currency={currency}>{children}</Providers>
       </body>
     </html>
   );

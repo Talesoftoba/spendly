@@ -1,13 +1,16 @@
 "use client";
 
+import { useCurrency } from "../components/layout/CurrencyProvider";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "../components/layout/ThemeProvider";
 import { updateProfile } from "../lib/actions";
 
 export default function SettingsPage() {
+
   const { data: session, update } = useSession();
   const { theme, setTheme } = useTheme();
+  const { setCurrency: updateCurrency } = useCurrency();
 
   const [name, setName]           = useState("");
   const [currency, setCurrency]   = useState("USD");
@@ -26,36 +29,39 @@ export default function SettingsPage() {
     });
   }, [session?.user?.name]);
 
-  const handleSave = async () => {
-    if (!name.trim()) {
-      setSaveError("Name cannot be empty");
+const handleSave = async () => {
+  if (!name.trim()) {
+    setSaveError("Name cannot be empty");
+    return;
+  }
+
+  setSaving(true);
+  setSaveError("");
+
+  try {
+    const result = await updateProfile({ name: name.trim(), currency });
+
+    if ("error" in result) {
+      setSaveError("Failed to save. Please try again.");
+      setSaving(false);
       return;
     }
 
-    setSaving(true);
-    setSaveError("");
+    // Update currency context immediately so UI reflects change
+    updateCurrency(currency);
 
-    try {
-      const result = await updateProfile({ name: name.trim(), currency });
+    // Update session with new name
+    await update({ name: name.trim() });
 
-      if ("error" in result) {
-        setSaveError("Failed to save. Please try again.");
-        setSaving(false);
-        return;
-      }
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
 
-      // Update JWT token with new name — no page reload needed
-      await update({ name: name.trim() });
-
-      setSaving(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-
-    } catch {
-      setSaveError("Something went wrong. Please try again.");
-      setSaving(false);
-    }
-  };
+  } catch {
+    setSaveError("Something went wrong. Please try again.");
+    setSaving(false);
+  }
+};
 
   const inputStyle: React.CSSProperties = {
     width: "100%",

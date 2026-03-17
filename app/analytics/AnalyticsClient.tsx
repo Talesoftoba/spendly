@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrency } from "../components/layout/CurrencyProvider";
 import {
   BarChart,
   Bar,
@@ -67,6 +68,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
+  const { currency } = useCurrency();
   const totalIncome = monthlyData.reduce((a, m) => a + m.income, 0);
   const totalExpense = monthlyData.reduce((a, m) => a + m.expense, 0);
   const savingsRate =
@@ -90,12 +92,12 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         {[
           {
             label: "6-Month Income",
-            value: formatCurrency(totalIncome),
+            value: formatCurrency(totalIncome, currency),
             color: "#e8ff47",
           },
           {
             label: "6-Month Expenses",
-            value: formatCurrency(totalExpense),
+            value: formatCurrency(totalExpense, currency),
             color: "#4778ff",
           },
           {
@@ -365,7 +367,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                           color: "var(--text-secondary)",
                         }}
                       >
-                        {formatCurrency(c.value)}
+                        {formatCurrency(c.value, currency)}
                       </span>
                       <span
                         style={{
@@ -507,7 +509,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                   }}
                 >
                   {positive ? "+" : ""}
-                  {formatCurrency(savings)}
+                  {formatCurrency(savings, currency)}
                 </span>
               </div>
             );

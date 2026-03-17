@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrency } from "../components/layout/CurrencyProvider";
+
 import Link from "next/link";
 import {
   AreaChart,
@@ -171,6 +173,7 @@ export function DashboardClient({
   budgets,
   recentTransactions,
 }: Props) {
+  const { currency } = useCurrency();
   return (
     <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
@@ -184,27 +187,27 @@ export function DashboardClient({
       >
         <StatCard
           label="Total Balance"
-          value={formatCurrency(stats.totalBalance)}
+          value={formatCurrency(stats.totalBalance, currency)}
           sub="Net all-time savings"
           accent="#e8ff47"
         />
         <StatCard
           label="Monthly Income"
-          value={formatCurrency(stats.monthlyIncome)}
+          value={formatCurrency(stats.monthlyIncome, currency)}
           sub={`${stats.incomeChange >= 0 ? "↑" : "↓"} ${Math.abs(stats.incomeChange)}% vs last month`}
           accent="#47ffe8"
           positive={stats.incomeChange >= 0}
         />
         <StatCard
           label="Monthly Expenses"
-          value={formatCurrency(stats.monthlyExpenses)}
+          value={formatCurrency(stats.monthlyExpenses, currency)}
           sub={`${stats.expenseChange <= 0 ? "↓" : "↑"} ${Math.abs(stats.expenseChange)}% vs last month`}
           accent="#4778ff"
           positive={stats.expenseChange <= 0}
         />
         <StatCard
           label="Net Savings"
-          value={formatCurrency(stats.netSavings)}
+          value={formatCurrency(stats.netSavings, currency)}
           sub={stats.netSavings >= 0 ? "↑ On track" : "↓ Overspending"}
           accent="#a847ff"
           positive={stats.netSavings >= 0}
@@ -603,7 +606,7 @@ export function DashboardClient({
                   }}
                 >
                   {t.type === "INCOME" ? "+" : "-"}
-                  {formatCurrency(t.amount)}
+                  {formatCurrency(t.amount, currency)}
                 </p>
               </div>
             ))}
@@ -704,7 +707,7 @@ export function DashboardClient({
                           color: over ? "#ff6b47" : "var(--text-muted)",
                         }}
                       >
-                        {formatCurrency(b.spent)} / {formatCurrency(b.limit)}
+                        {formatCurrency(b.spent, currency)} / {formatCurrency(b.limit, currency)}
                       </span>
                     </div>
                     <div
@@ -734,7 +737,7 @@ export function DashboardClient({
                           marginTop: "4px",
                         }}
                       >
-                        ⚠ Over by {formatCurrency(b.spent - b.limit)}
+                        ⚠ Over by {formatCurrency(b.spent - b.limit, currency)}
                       </p>
                     )}
                   </div>

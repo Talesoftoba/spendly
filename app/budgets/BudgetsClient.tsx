@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrency } from "../components/layout/CurrencyProvider";
 import { useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
 import { upsertBudget, deleteBudget } from "../lib/actions";
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function BudgetsClient({ budgets: initial, categories }: Props) {
+  const { currency } = useCurrency();
   const [budgets, setBudgets] = useState(initial);
   const [showModal, setShowModal] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -300,7 +302,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                         letterSpacing: "-0.02em",
                       }}
                     >
-                      {formatCurrency(b.spent)}
+                      {formatCurrency(b.spent, currency)}
                     </span>
                     <span
                       style={{
@@ -310,7 +312,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                         marginBottom: "4px",
                       }}
                     >
-                      / {formatCurrency(b.limit)}
+                      / {formatCurrency(b.limit, currency)}
                     </span>
                   </div>
 
@@ -344,8 +346,8 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                   }}
                 >
                   {over
-                    ? `${formatCurrency(b.spent - b.limit)} over limit`
-                    : `${formatCurrency(b.limit - b.spent)} remaining · ${Math.round(pct)}% used`}
+                    ? `${formatCurrency(b.spent - b.limit, currency)} over limit`
+                    : `${formatCurrency(b.limit - b.spent, currency)} remaining · ${Math.round(pct)}% used`}
                 </p>
               </div>
             );
