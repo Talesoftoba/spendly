@@ -430,24 +430,31 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* User avatar */}
-            <div
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "var(--font-syne)",
-                fontWeight: 800,
-                fontSize: "14px",
-                color: "#080808",
-                flexShrink: 0,
-              }}
-            >
-              {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
-            </div>
+         <Link
+  href="/settings"
+  style={{
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "var(--font-syne)",
+    fontWeight: 800,
+    fontSize: "14px",
+    color: "#080808",
+    flexShrink: 0,
+    textDecoration: "none",
+    cursor: "pointer",
+    transition: "opacity 0.2s",
+  }}
+  title="Profile Settings"
+  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+>
+  {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+</Link>
           </div>
         </header>
 
