@@ -44,3 +44,159 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+/* ── Light Theme ──────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base: #f0f0ec;
+  --bg-card: rgba(0, 0, 0, 0.03);
+  --bg-card-hover: rgba(0, 0, 0, 0.05);
+  --border: rgba(0, 0, 0, 0.09);
+  --text-primary: #111111;
+  --text-secondary: rgba(0, 0, 0, 0.55);
+  --text-muted: rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] body,
+[data-theme="light"] main,
+[data-theme="light"] #__next {
+  background: #f0f0ec !important;
+  color: #111111;
+}
+
+/* Force all text to inherit theme color */
+[data-theme="light"] * {
+  color: inherit;
+}
+
+/* Specific overrides for hardcoded white text */
+[data-theme="light"] div,
+[data-theme="light"] p,
+[data-theme="light"] span:not([style*="color: #"]):not([style*="color:#"]),
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] td,
+[data-theme="light"] th {
+  color: inherit;
+}
+
+/* Layout surfaces */
+[data-theme="light"] aside {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #111111 !important;
+}
+
+[data-theme="light"] header {
+  background: rgba(240, 240, 236, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #111111 !important;
+}
+
+/* Cards */
+[data-theme="light"] [style*="background: var(--bg-card)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.02)"],
+[data-theme="light"] [style*="background: rgba(255, 255, 255, 0.02)"] {
+  background: rgba(0, 0, 0, 0.03) !important;
+  color: #111111 !important;
+}
+
+/* Modal backgrounds */
+[data-theme="light"] [style*="background: #0f0f0f"],
+[data-theme="light"] [style*='background: "#0f0f0f"'],
+[data-theme="light"] [style*="background:#0f0f0f"] {
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+[data-theme="light"] [style*="background: rgba(0,0,0,0.7)"],
+[data-theme="light"] [style*="background: rgba(0, 0, 0, 0.7)"] {
+  background: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Inputs */
+[data-theme="light"] input:not([type="checkbox"]),
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="light"] select option {
+  background: #f0f0ec;
+  color: #111111;
+}
+
+/* Table */
+[data-theme="light"] table,
+[data-theme="light"] tr,
+[data-theme="light"] td,
+[data-theme="light"] th {
+  color: #111111 !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] tr:hover {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Nav links */
+[data-theme="light"] nav a,
+[data-theme="light"] nav a span,
+[data-theme="light"] nav button,
+[data-theme="light"] nav button span {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="light"] nav a[style*="color: #e8ff47"],
+[data-theme="light"] nav a[style*="color:#e8ff47"] {
+  color: #7a9900 !important;
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Recharts */
+[data-theme="light"] .recharts-cartesian-axis-tick text,
+[data-theme="light"] .recharts-text {
+  fill: rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="light"] .recharts-cartesian-grid line {
+  stroke: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* SSE indicator */
+[data-theme="light"] [style*="rgba(71,255,232,0.06)"] {
+  background: rgba(0, 130, 110, 0.08) !important;
+  border-color: rgba(0, 130, 110, 0.2) !important;
+}
+
+/* Progress bars background */
+[data-theme="light"] [style*="rgba(255,255,255,0.07)"] {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Hover states on rows and cards */
+[data-theme="light"] [style*="rgba(255,255,255,0.04)"] {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] [style*="rgba(255,255,255,0.05)"] {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Badge backgrounds */
+[data-theme="light"] [style*="rgba(255,255,255,0.03)"],
+[data-theme="light"] [style*="rgba(255, 255, 255, 0.03)"] {
+  background: rgba(0, 0, 0, 0.03) !important;
+}

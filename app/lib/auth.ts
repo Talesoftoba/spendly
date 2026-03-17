@@ -37,14 +37,25 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) session.user.id = token.id as string;
-      return session;
-    },
+callbacks: {
+  async jwt({ token, user, trigger, session }) {
+    // On initial sign in
+    if (user) {
+      token.id = user.id;
+      token.name = user.name;
+    }
+    // When update() is called from the client
+    if (trigger === "update" && session?.name) {
+      token.name = session.name;
+    }
+    return token;
   },
+  async session({ session, token }) {
+    if (token) {
+      session.user.id = token.id as string;
+      session.user.name = token.name as string;
+    }
+    return session;
+  },
+},
 };

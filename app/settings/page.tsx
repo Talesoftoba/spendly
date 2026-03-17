@@ -1,16 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { signOut } from "next-auth/react";
+import { useState, useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useTheme } from "../components/layout/ThemeProvider";
+import { updateProfile } from "../lib/actions";
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
-  const [saved, setSaved] = useState(false);
+  const { data: session, update } = useSession();
+  const { theme, setTheme } = useTheme();
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const [name, setName]           = useState("");
+  const [currency, setCurrency]   = useState("USD");
+  const [saved, setSaved]         = useState(false);
+  const [saving, setSaving]       = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [mounted, setMounted]     = useState(false);
+  const mountedRef                = useRef(false);
+
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    Promise.resolve().then(() => {
+      setMounted(true);
+      if (session?.user?.name) setName(session.user.name);
+    });
+  }, [session?.user?.name]);
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setSaveError("Name cannot be empty");
+      return;
+    }
+
+    setSaving(true);
+    setSaveError("");
+
+    try {
+      const result = await updateProfile({ name: name.trim(), currency });
+
+      if ("error" in result) {
+        setSaveError("Failed to save. Please try again.");
+        setSaving(false);
+        return;
+      }
+
+      // Update JWT token with new name — no page reload needed
+      await update({ name: name.trim() });
+
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+
+    } catch {
+      setSaveError("Something went wrong. Please try again.");
+      setSaving(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -19,9 +63,9 @@ export default function SettingsPage() {
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "12px",
     padding: "12px 16px",
-    color: "#fff",
-    caretColor: "#fff",
-    WebkitTextFillColor: "#fff",
+    color: "var(--text-primary)",
+    caretColor: "var(--text-primary)",
+    WebkitTextFillColor: "var(--text-primary)",
     fontFamily: "var(--font-dm-mono)",
     fontSize: "14px",
     outline: "none",
@@ -46,30 +90,26 @@ export default function SettingsPage() {
     marginBottom: "16px",
   };
 
+  const sectionTitleStyle: React.CSSProperties = {
+    fontFamily: "var(--font-syne)",
+    fontSize: "16px",
+    fontWeight: 800,
+    color: "var(--text-primary)",
+    letterSpacing: "-0.02em",
+    marginBottom: "24px",
+  };
+
   return (
-    <div
-      className="animate-fade-up"
-      style={{ maxWidth: "560px" }}
-    >
+    <div className="animate-fade-up" style={{ maxWidth: "560px" }}>
 
-      {/* ── Profile Section ─────────────────────────────────────────── */}
+      {/* ── Profile ──────────────────────────────────────────────────── */}
       <div style={sectionStyle}>
-        <p
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontSize: "16px",
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "-0.02em",
-            marginBottom: "24px",
-          }}
+        <p style={sectionTitleStyle}>Profile</p>
+
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
         >
-          Profile
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-          {/* Avatar */}
+          {/* Avatar row */}
           <div
             style={{
               display: "flex",
@@ -94,7 +134,7 @@ export default function SettingsPage() {
                 flexShrink: 0,
               }}
             >
-              {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+              {name?.[0]?.toUpperCase() ?? session?.user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div>
               <p
@@ -102,11 +142,11 @@ export default function SettingsPage() {
                   fontFamily: "var(--font-syne)",
                   fontWeight: 700,
                   fontSize: "15px",
-                  color: "#fff",
+                  color: "var(--text-primary)",
                   marginBottom: "2px",
                 }}
               >
-                {session?.user?.name ?? "User"}
+                {name || session?.user?.name || "User"}
               </p>
               <p
                 style={{
@@ -124,7 +164,9 @@ export default function SettingsPage() {
           <div>
             <label style={labelStyle}>Full Name</label>
             <input
-              defaultValue={session?.user?.name ?? ""}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
               style={inputStyle}
               onFocus={(e) =>
                 (e.target.style.borderColor = "rgba(232,255,71,0.5)")
@@ -139,14 +181,14 @@ export default function SettingsPage() {
           <div>
             <label style={labelStyle}>Email</label>
             <input
-              defaultValue={session?.user?.email ?? ""}
+              value={session?.user?.email ?? ""}
               type="email"
+              readOnly
               style={{
                 ...inputStyle,
-                opacity: 0.6,
+                opacity: 0.5,
                 cursor: "not-allowed",
               }}
-              disabled
             />
             <p
               style={{
@@ -164,7 +206,8 @@ export default function SettingsPage() {
           <div>
             <label style={labelStyle}>Currency</label>
             <select
-              defaultValue="USD"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
               style={{ ...inputStyle, cursor: "pointer" }}
             >
               <option value="USD">USD ($) — US Dollar</option>
@@ -176,9 +219,27 @@ export default function SettingsPage() {
             </select>
           </div>
 
+          {/* Error */}
+          {saveError && (
+            <p
+              style={{
+                fontFamily: "var(--font-dm-mono)",
+                fontSize: "12px",
+                color: "#ff6b47",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                background: "rgba(255,107,71,0.08)",
+                border: "1px solid rgba(255,107,71,0.2)",
+              }}
+            >
+              {saveError}
+            </p>
+          )}
+
           {/* Save button */}
           <button
             onClick={handleSave}
+            disabled={saving}
             style={{
               alignSelf: "flex-start",
               padding: "10px 24px",
@@ -189,160 +250,162 @@ export default function SettingsPage() {
               fontFamily: "var(--font-syne)",
               fontWeight: 700,
               fontSize: "13px",
-              cursor: "pointer",
+              cursor: saving ? "not-allowed" : "pointer",
+              opacity: saving ? 0.6 : 1,
               transition: "all 0.3s",
               marginTop: "4px",
             }}
           >
-            {saved ? "✓ Saved" : "Save Changes"}
+            {saving ? "Saving..." : saved ? "✓ Saved" : "Save Changes"}
           </button>
         </div>
       </div>
 
-      {/* ── Appearance Section ───────────────────────────────────────── */}
+      {/* ── Appearance ───────────────────────────────────────────────── */}
       <div style={sectionStyle}>
-        <p
+        <p style={sectionTitleStyle}>Appearance</p>
+
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        >
+          {[
+            { value: "dark",  label: "Dark",  sub: "Easy on the eyes" },
+            { value: "light", label: "Light", sub: "Clean and bright"  },
+          ].map((t) => {
+            const active = mounted
+              ? theme === t.value
+              : t.value === "dark";
+
+            return (
+              <button
+                key={t.value}
+                onClick={() => setTheme(t.value as "dark" | "light")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "14px 16px",
+                  borderRadius: "12px",
+                  border: `1px solid ${
+                    active
+                      ? "rgba(232,255,71,0.3)"
+                      : "var(--border)"
+                  }`,
+                  background: active
+                    ? "rgba(232,255,71,0.05)"
+                    : "transparent",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  width: "100%",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active)
+                    e.currentTarget.style.borderColor =
+                      "rgba(255,255,255,0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active)
+                    e.currentTarget.style.borderColor = "var(--border)";
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-syne)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "var(--text-primary)",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    {t.label}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-dm-mono)",
+                      fontSize: "11px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    {t.sub}
+                  </p>
+                </div>
+                {active && (
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#e8ff47",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Account ──────────────────────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <p style={sectionTitleStyle}>Account</p>
+
+        <button
+          onClick={() => signOut({ callbackUrl: "/auth/login" })}
           style={{
-            fontFamily: "var(--font-syne)",
-            fontSize: "16px",
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "-0.02em",
-            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 16px",
+            borderRadius: "12px",
+            border: "1px solid var(--border)",
+            background: "transparent",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            width: "100%",
+            textAlign: "left",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background =
+              "rgba(255,255,255,0.04)";
+            e.currentTarget.style.borderColor =
+              "rgba(255,255,255,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "var(--border)";
           }}
         >
-          Appearance
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {[
-            { label: "Dark",  sub: "Default dark theme",   active: true  },
-            { label: "Light", sub: "Coming soon",          active: false },
-          ].map((theme) => (
-            <div
-              key={theme.label}
+          <div>
+            <p
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: `1px solid ${theme.active
-                  ? "rgba(232,255,71,0.3)"
-                  : "var(--border)"
-                  }`,
-                background: theme.active
-                  ? "rgba(232,255,71,0.05)"
-                  : "transparent",
-                cursor: theme.active ? "default" : "not-allowed",
-                opacity: theme.active ? 1 : 0.4,
+                fontFamily: "var(--font-syne)",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                marginBottom: "2px",
               }}
             >
-              <div>
-                <p
-                  style={{
-                    fontFamily: "var(--font-syne)",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "#fff",
-                    marginBottom: "2px",
-                  }}
-                >
-                  {theme.label}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "var(--font-dm-mono)",
-                    fontSize: "11px",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {theme.sub}
-                </p>
-              </div>
-              {theme.active && (
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "#e8ff47",
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Account Section ──────────────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <p
-          style={{
-            fontFamily: "var(--font-syne)",
-            fontSize: "16px",
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "-0.02em",
-            marginBottom: "24px",
-          }}
-        >
-          Account
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-
-          {/* Sign out */}
-          <button
-            onClick={() => signOut({ callbackUrl: "/auth/login" })}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 16px",
-              borderRadius: "12px",
-              border: "1px solid var(--border)",
-              background: "transparent",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              width: "100%",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "var(--border)";
-            }}
+              Sign Out
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-dm-mono)",
+                fontSize: "11px",
+                color: "var(--text-muted)",
+              }}
+            >
+              Sign out of your Spendly account
+            </p>
+          </div>
+          <span
+            style={{ color: "var(--text-muted)", fontSize: "18px" }}
           >
-            <div style={{ textAlign: "left" }}>
-              <p
-                style={{
-                  fontFamily: "var(--font-syne)",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: "#fff",
-                  marginBottom: "2px",
-                }}
-              >
-                Sign Out
-              </p>
-              <p
-                style={{
-                  fontFamily: "var(--font-dm-mono)",
-                  fontSize: "11px",
-                  color: "var(--text-muted)",
-                }}
-              >
-                Sign out of your Spendly account
-              </p>
-            </div>
-            <span style={{ color: "var(--text-muted)", fontSize: "18px" }}>
-              →
-            </span>
-          </button>
-        </div>
+            →
+          </span>
+        </button>
       </div>
 
       {/* ── Danger Zone ──────────────────────────────────────────────── */}
@@ -374,7 +437,6 @@ export default function SettingsPage() {
         >
           These actions are permanent and cannot be undone.
         </p>
-
         <button
           style={{
             padding: "10px 20px",
@@ -389,12 +451,16 @@ export default function SettingsPage() {
             transition: "all 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255,107,71,0.2)";
-            e.currentTarget.style.borderColor = "rgba(255,107,71,0.5)";
+            e.currentTarget.style.background =
+              "rgba(255,107,71,0.2)";
+            e.currentTarget.style.borderColor =
+              "rgba(255,107,71,0.5)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255,107,71,0.1)";
-            e.currentTarget.style.borderColor = "rgba(255,107,71,0.3)";
+            e.currentTarget.style.background =
+              "rgba(255,107,71,0.1)";
+            e.currentTarget.style.borderColor =
+              "rgba(255,107,71,0.3)";
           }}
         >
           Delete All Data

@@ -174,3 +174,41 @@ export async function deleteBudget(id: string) {
   revalidatePath("/budgets");
   return { success: true };
 }
+
+// ─── Update Profile ────────────────────────────────────────────────────────────
+
+
+
+  export async function updateProfile(data: unknown) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: { auth: ["Not authenticated"] } };
+  }
+
+  const UpdateProfileSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    currency: z.string().min(3).max(3),
+  });
+
+  const parsed = UpdateProfileSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        name: parsed.data.name,
+        currency: parsed.data.currency,
+      },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (e) {
+    console.error("updateProfile error:", e);
+    return { error: { server: ["Failed to update profile"] } };
+  }
+}

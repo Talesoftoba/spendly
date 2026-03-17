@@ -16,7 +16,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Save — Personal Finance Tracker",
+  title: "Spendly — Personal Finance Tracker",
   description: "Track your income, expenses and budgets in one place.",
 };
 
@@ -26,8 +26,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmMono.variable}`}>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${syne.variable} ${dmMono.variable}`}
+    >
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('spendly-theme');
+                if (theme && theme !== 'dark') {
+                  document.documentElement.setAttribute('data-theme', theme);
+                }
+              } catch {}
+            `,
+          }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>
