@@ -23,6 +23,8 @@ import type {
   BudgetWithCategory,
   TransactionWithCategory,
 } from "@/types";
+import { categoryIcons, categoryColors, } from "../lib/categoryConfig";
+import { CreditCard } from "lucide-react";
 
 type Props = {
   stats: DashboardStats;
@@ -556,21 +558,30 @@ export function DashboardClient({
                   (e.currentTarget.style.background = "transparent")
                 }
               >
-                <span
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "10px",
-                    background: "rgba(255,255,255,0.05)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    flexShrink: 0,
-                  }}
-                >
-                  {t.category?.icon ?? "💸"}
-                </span>
+              {(() => {
+  const Icon = t.category?.name
+    ? categoryIcons[t.category.name] ?? CreditCard
+    : CreditCard;
+  const color = t.category?.name
+    ? categoryColors[t.category.name] ?? "rgba(255,255,255,0.4)"
+    : "rgba(255,255,255,0.4)";
+  return (
+    <span
+      style={{
+        width: "36px",
+        height: "36px",
+        borderRadius: "10px",
+        background: `${color}18`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <Icon size={15} color={color} strokeWidth={2} />
+    </span>
+  );
+})()}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{

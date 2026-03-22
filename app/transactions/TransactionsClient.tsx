@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Search, Plus, Trash2, X } from "lucide-react";
+import { Search, Plus, Trash2, X, CreditCard } from "lucide-react";
 import { createTransaction, deleteTransaction } from "../lib/actions";
 import { formatCurrency, formatDate } from "../lib/utils";
+import { useCurrency } from "../components/layout/CurrencyProvider";
 import type { TransactionWithCategory, Category } from "@/types";
+import { categoryIcons, categoryColors } from "../lib/categoryConfig";
 
 type Props = {
   transactions: TransactionWithCategory[];
@@ -17,13 +19,13 @@ export function TransactionsClient({
   transactions: initial,
   categories,
 }: Props) {
+  const { currency } = useCurrency();
   const [transactions, setTransactions] = useState(initial);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("ALL");
   const [showModal, setShowModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Form state
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -34,16 +36,12 @@ export function TransactionsClient({
   });
   const [formError, setFormError] = useState("");
 
-  // ── Filter transactions client-side ──────────────────────────────────
   const filtered = transactions.filter((t) => {
-    const matchSearch = t.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "ALL" || t.type === filter;
     return matchSearch && matchFilter;
   });
 
-  // ── Add transaction ───────────────────────────────────────────────────
   const handleAdd = () => {
     if (!form.title || !form.amount) {
       setFormError("Title and amount are required");
@@ -62,7 +60,6 @@ export function TransactionsClient({
         return;
       }
 
-      // Reset form and close modal
       setShowModal(false);
       setForm({
         title: "",
@@ -73,12 +70,10 @@ export function TransactionsClient({
         note: "",
       });
 
-      // Refresh page data
       window.location.reload();
     });
   };
 
-  // ── Delete transaction ────────────────────────────────────────────────
   const handleDelete = (id: string) => {
     startTransition(async () => {
       await deleteTransaction(id);
@@ -86,16 +81,15 @@ export function TransactionsClient({
     });
   };
 
-  // ── Styles ────────────────────────────────────────────────────────────
   const inputStyle: React.CSSProperties = {
     width: "100%",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "10px",
     padding: "10px 14px",
-    color: "#fff",
-    caretColor: "#fff",
-    WebkitTextFillColor: "#fff",
+    color: "var(--text-primary)",
+    caretColor: "var(--text-primary)",
+    WebkitTextFillColor: "var(--text-primary)",
     fontFamily: "var(--font-dm-mono)",
     fontSize: "13px",
     outline: "none",
@@ -122,7 +116,7 @@ export function TransactionsClient({
           border: "1px solid var(--border)",
         }}
       >
-        {/* ── Toolbar ────────────────────────────────────────────────── */}
+        {/* ── Toolbar ──────────────────────────────────────────────── */}
         <div
           style={{
             display: "flex",
@@ -132,7 +126,6 @@ export function TransactionsClient({
             borderBottom: "1px solid var(--border)",
           }}
         >
-          {/* Search */}
           <div style={{ flex: 1, position: "relative" }}>
             <Search
               size={14}
@@ -158,7 +151,6 @@ export function TransactionsClient({
             />
           </div>
 
-          {/* Filter buttons */}
           {(["ALL", "INCOME", "EXPENSE"] as FilterType[]).map((f) => (
             <button
               key={f}
@@ -169,8 +161,7 @@ export function TransactionsClient({
                 border: "1px solid var(--border)",
                 background:
                   filter === f ? "rgba(232,255,71,0.1)" : "transparent",
-                color:
-                  filter === f ? "#e8ff47" : "var(--text-muted)",
+                color: filter === f ? "#e8ff47" : "var(--text-muted)",
                 fontFamily: "var(--font-dm-mono)",
                 fontSize: "12px",
                 cursor: "pointer",
@@ -181,7 +172,6 @@ export function TransactionsClient({
             </button>
           ))}
 
-          {/* Add button */}
           <button
             onClick={() => setShowModal(true)}
             style={{
@@ -207,7 +197,7 @@ export function TransactionsClient({
           </button>
         </div>
 
-        {/* ── Table ──────────────────────────────────────────────────── */}
+        {/* ── Table ────────────────────────────────────────────────── */}
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -247,140 +237,158 @@ export function TransactionsClient({
                 </td>
               </tr>
             )}
-            {filtered.map((t) => (
-              <tr
-                key={t.id}
-                style={{
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background =
-                    "rgba(255,255,255,0.02)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
-              >
-                {/* Title */}
-                <td style={{ padding: "14px 20px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                    }}
-                  >
+            {filtered.map((t) => {
+              // ── Resolve icon and color for this transaction ────────
+              const Icon = t.category?.name
+                ? categoryIcons[t.category.name] ?? CreditCard
+                : CreditCard;
+              const iconColor = t.category?.name
+                ? categoryColors[t.category.name] ?? "rgba(255,255,255,0.4)"
+                : "rgba(255,255,255,0.4)";
+              const bgColor = t.category?.name
+                ? categoryColors[t.category.name]
+                : null;
+
+              return (
+                <tr
+                  key={t.id}
+                  style={{
+                    borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background =
+                      "rgba(255,255,255,0.02)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  {/* Title + Icon */}
+                  <td style={{ padding: "14px 20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "10px",
+                          background: bgColor
+                            ? `${bgColor}18`
+                            : "rgba(255,255,255,0.05)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon
+                          size={15}
+                          color={iconColor}
+                          strokeWidth={2}
+                        />
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-syne)",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {t.title}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Category */}
+                  <td style={{ padding: "14px 20px" }}>
                     <span
                       style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "10px",
+                        fontFamily: "var(--font-dm-mono)",
+                        fontSize: "12px",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
                         background: "rgba(255,255,255,0.05)",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      {t.category?.name ?? "Uncategorized"}
+                    </span>
+                  </td>
+
+                  {/* Date */}
+                  <td
+                    style={{
+                      padding: "14px 20px",
+                      fontFamily: "var(--font-dm-mono)",
+                      fontSize: "12px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    {formatDate(t.date)}
+                  </td>
+
+                  {/* Amount */}
+                  <td
+                    style={{
+                      padding: "14px 20px",
+                      fontFamily: "var(--font-dm-mono)",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color:
+                        t.type === "INCOME"
+                          ? "#47ffe8"
+                          : "rgba(255,255,255,0.8)",
+                    }}
+                  >
+                    {t.type === "INCOME" ? "+" : "-"}
+                    {formatCurrency(t.amount, currency)}
+                  </td>
+
+                  {/* Delete */}
+                  <td style={{ padding: "14px 20px" }}>
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      disabled={isPending}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#ff6b47",
+                        cursor: isPending ? "not-allowed" : "pointer",
+                        padding: "6px",
+                        borderRadius: "6px",
+                        opacity: 0,
+                        transition: "opacity 0.2s, background 0.2s",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "16px",
-                        flexShrink: 0,
+                      }}
+                      className="delete-btn"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(255,107,71,0.1)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
                       }}
                     >
-                      {t.category?.icon ?? "💸"}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-syne)",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        color: "#fff",
-                      }}
-                    >
-                      {t.title}
-                    </span>
-                  </div>
-                </td>
-
-                {/* Category */}
-                <td style={{ padding: "14px 20px" }}>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-dm-mono)",
-                      fontSize: "12px",
-                      padding: "4px 10px",
-                      borderRadius: "6px",
-                      background: "rgba(255,255,255,0.05)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    {t.category?.name ?? "Uncategorized"}
-                  </span>
-                </td>
-
-                {/* Date */}
-                <td
-                  style={{
-                    padding: "14px 20px",
-                    fontFamily: "var(--font-dm-mono)",
-                    fontSize: "12px",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {formatDate(t.date)}
-                </td>
-
-                {/* Amount */}
-                <td
-                  style={{
-                    padding: "14px 20px",
-                    fontFamily: "var(--font-dm-mono)",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color:
-                      t.type === "INCOME"
-                        ? "#47ffe8"
-                        : "rgba(255,255,255,0.8)",
-                  }}
-                >
-                  {t.type === "INCOME" ? "+" : "-"}
-                  {formatCurrency(t.amount)}
-                </td>
-
-                {/* Delete */}
-                <td style={{ padding: "14px 20px" }}>
-                  <button
-                    onClick={() => handleDelete(t.id)}
-                    disabled={isPending}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#ff6b47",
-                      cursor: isPending ? "not-allowed" : "pointer",
-                      padding: "6px",
-                      borderRadius: "6px",
-                      opacity: 0,
-                      transition: "opacity 0.2s, background 0.2s",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    className="delete-btn"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background =
-                        "rgba(255,107,71,0.1)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                      <Trash2 size={13} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* ── Add Transaction Modal ───────────────────────────────────────── */}
+      {/* ── Add Transaction Modal ─────────────────────────────────────── */}
       {showModal && (
         <div
           style={{
@@ -405,7 +413,6 @@ export function TransactionsClient({
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            {/* Modal header */}
             <div
               style={{
                 display: "flex",
@@ -508,7 +515,7 @@ export function TransactionsClient({
 
               {/* Amount */}
               <div>
-                <label style={labelStyle}>Amount ($)</label>
+                <label style={labelStyle}>Amount</label>
                 <input
                   type="number"
                   placeholder="0.00"
@@ -526,8 +533,14 @@ export function TransactionsClient({
                 />
               </div>
 
-              {/* Category + Date row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {/* Category + Date */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                }}
+              >
                 <div>
                   <label style={labelStyle}>Category</label>
                   <select
@@ -540,7 +553,7 @@ export function TransactionsClient({
                     <option value="">None</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} {c.name}
+                        {c.name}
                       </option>
                     ))}
                   </select>
@@ -623,7 +636,6 @@ export function TransactionsClient({
         </div>
       )}
 
-      {/* Make delete button visible on row hover */}
       <style>{`
         tr:hover .delete-btn {
           opacity: 1 !important;
