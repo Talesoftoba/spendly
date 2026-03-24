@@ -12,6 +12,8 @@ import {
 } from "recharts";
 import { formatCurrency } from "../lib/utils";
 import type { MonthlyData, CategorySpending } from "@/types";
+import { categoryIcons, categoryColors } from "../lib/categoryConfig";
+import { CreditCard } from "lucide-react";
 
 type Props = {
   monthlyData: MonthlyData[];
@@ -341,7 +343,27 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                         gap: "10px",
                       }}
                     >
-                      <span style={{ fontSize: "18px" }}>{c.icon}</span>
+                     {(() => {
+                      const Icon = categoryIcons[c.name] ?? CreditCard;
+                      const color = categoryColors[c.name]?? "rgba(255,255,255,0.4)";
+                      return(
+                        <span
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          background: `${color}18`,
+                          display: "flex",
+                          alignItems : "center",
+                          justifyContent : "center",
+                          flexShrink: 0,
+                        }}
+                        >
+                           <Icon size={14} color={color} strokeWidth={2} />
+                        </span>
+                      );
+                     })()}
+                     
                       <span
                         style={{
                           fontFamily: "var(--font-syne)",

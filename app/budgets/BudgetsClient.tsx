@@ -6,6 +6,9 @@ import { Plus, X } from "lucide-react";
 import { upsertBudget, deleteBudget } from "../lib/actions";
 import { formatCurrency } from "../lib/utils";
 import type { BudgetWithCategory, Category } from "@/types";
+import { categoryIcons, categoryColors } from "../lib/categoryConfig";
+import { CreditCard } from "lucide-react";
+import { Target } from "lucide-react";
 
 type Props = {
   budgets: BudgetWithCategory[];
@@ -145,7 +148,20 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
             border: "1px solid var(--border)",
           }}
         >
-          <p style={{ fontSize: "48px", marginBottom: "16px" }}>🎯</p>
+         <div
+         style={{
+          width: "64px",
+          height: "6px",
+          borderRadius: "16px",
+          background: "rgba(233,255,71,0.08)",
+          display: "flex",
+          alignItems: "center",
+          margin: "0 auto 16px",
+         }}
+         > 
+            <Target size={28} color="#e8ff47" strokeWidth={1.5} />
+         </div>
+
           <p
             style={{
               fontFamily: "var(--font-syne)",
@@ -221,9 +237,26 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                       gap: "12px",
                     }}
                   >
-                    <span style={{ fontSize: "24px" }}>
-                      {b.category.icon}
-                    </span>
+                     {(() => {
+                      const Icon = categoryIcons[b.category.name] ?? CreditCard;
+                      const color = categoryColors[b.category.name]?? "rgba(255,255,255,0.4)";
+                      return(
+                        <span
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "10px",
+                          background: `${color}18`,
+                          display: "flex",
+                          alignItems : "center",
+                          justifyContent : "center",
+                          flexShrink: 0,
+                        }}
+                        >
+                           <Icon size={18} color={color} strokeWidth={2} />
+                        </span>
+                      );
+                     })()}
                     <div>
                       <p
                         style={{
