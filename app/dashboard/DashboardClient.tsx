@@ -701,16 +701,41 @@ export function DashboardClient({
                         marginBottom: "8px",
                       }}
                     >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-syne)",
-                          fontSize: "13px",
-                          fontWeight: 600,
-                          color: "#fff",
-                        }}
-                      >
-                        {b.category.name}
-                      </span>
+
+<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+  {(() => {
+    const Icon = categoryIcons[b.category.name] ?? CreditCard;
+    const color = categoryColors[b.category.name] ?? "rgba(255,255,255,0.4)";
+    return (
+      <span
+        style={{
+          width: "24px",
+          height: "24px",
+          borderRadius: "6px",
+          background: `${color}18`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={12} color={color} strokeWidth={2} />
+      </span>
+    );
+  })()}
+  <span
+    style={{
+      fontFamily: "var(--font-syne)",
+      fontSize: "13px",
+      fontWeight: 600,
+      color: "var(--text-primary)",
+    }}
+  >
+    {b.category.name}
+  </span>
+</div>
+
+                      
                       <span
                         style={{
                           fontFamily: "var(--font-dm-mono)",
