@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Search, Plus, Trash2, X, CreditCard } from "lucide-react";
+import { Search, Plus, Trash2, X } from "lucide-react";
 import { createTransaction, deleteTransaction } from "../lib/actions";
 import { formatCurrency, formatDate } from "../lib/utils";
 import { useCurrency } from "../components/layout/CurrencyProvider";
 import type { TransactionWithCategory, Category } from "@/types";
-import { categoryIcons, categoryColors } from "../lib/categoryConfig";
+import { CategoryIcon } from "../components/ui/CategoryIcon"; 
 
 
 type Props = {
@@ -240,15 +240,6 @@ export function TransactionsClient({
             )}
             {filtered.map((t) => {
               // ── Resolve icon and color for this transaction ────────
-              const Icon = t.category?.name
-                ? categoryIcons[t.category.name] ?? CreditCard
-                : CreditCard;
-              const iconColor = t.category?.name
-                ? categoryColors[t.category.name] ?? "rgba(255,255,255,0.4)"
-                : "rgba(255,255,255,0.4)";
-              const bgColor = t.category?.name
-                ? categoryColors[t.category.name]
-                : null;
 
               return (
                 <tr
@@ -274,26 +265,11 @@ export function TransactionsClient({
                         gap: "12px",
                       }}
                     >
-                      <span
-                        style={{
-                          width: "36px",
-                          height: "36px",
-                          borderRadius: "10px",
-                          background: bgColor
-                            ? `${bgColor}18`
-                            : "rgba(255,255,255,0.05)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon
-                          size={15}
-                          color={iconColor}
-                          strokeWidth={2}
-                        />
-                      </span>
+                     <CategoryIcon
+  name={t.category?.name ?? ""}
+  color={t.category?.color}
+  size="md"
+/>
                       <span
                         style={{
                           fontFamily: "var(--font-syne)",

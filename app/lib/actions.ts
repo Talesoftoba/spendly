@@ -212,3 +212,75 @@ export async function deleteBudget(id: string) {
     return { error: { server: ["Failed to update profile"] } };
   }
 }
+
+// ─── Category Actions ──────────────────────────────────────────────────────────
+
+const CategorySchema = z.object({
+  name: z.string().min(1, "Name is required").max(30, "Name too long"),
+  color: z.string().min(4, "Color is required"),
+});
+
+export async function createCategory(data: unknown) {
+  const userId = await requireUser();
+
+  const parsed = CategorySchema.safeParse(data);
+  if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
+
+  // Check if category with same name already exists for this user
+  const existing = await prisma.category.findUnique({
+    where: {
+      userId_name: {
+        userId,
+        name: parsed.data.name,
+      },
+    },
+  });
+
+  if (existing) return { error: { name: ["Category already exists"] } };
+
+  const category = await prisma.category.create({
+    data: {
+      userId,
+      name: parsed.data.name,
+      color: parsed.data.color,
+      icon: "📦", // default icon — we'll handle display with letter avatar
+    },
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/transactions");
+  revalidatePath("/budgets");
+  return { success: true, category };
+}
+
+export async function deleteCategory(id: string) {
+  const userId = await requireUser();
+
+  const existing = await prisma.category.findFirst({
+    where: { id, userId },
+  });
+  if (!existing) return { error: "Category not found" };
+
+  // Check if category has transactions attached
+  const transactionCount = await prisma.transaction.count({
+    where: { categoryId: id },
+  });
+
+  // Check if category has budgets attached
+  const budgetCount = await prisma.budget.count({
+    where: { categoryId: id },
+  });
+
+  if (transactionCount > 0 || budgetCount > 0) {
+    return {
+      error: `Cannot delete — this category has ${transactionCount} transaction(s) and ${budgetCount} budget(s) attached to it.`,
+    };
+  }
+
+  await prisma.category.delete({ where: { id } });
+
+  revalidatePath("/settings");
+  revalidatePath("/transactions");
+  revalidatePath("/budgets");
+  return { success: true };
+}
