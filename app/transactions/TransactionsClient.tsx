@@ -8,7 +8,6 @@ import { useCurrency } from "../components/layout/CurrencyProvider";
 import type { TransactionWithCategory, Category } from "@/types";
 import { CategoryIcon } from "../components/ui/CategoryIcon"; 
 
-
 type Props = {
   transactions: TransactionWithCategory[];
   categories: Category[];

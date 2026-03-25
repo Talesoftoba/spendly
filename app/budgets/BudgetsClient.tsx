@@ -455,7 +455,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                     .filter((c) => c.name !== "Income")
                     .map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.icon} {c.name}
+                      {c.name}
                       </option>
                     ))}
                 </select>
