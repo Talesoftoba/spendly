@@ -65,7 +65,7 @@ const TransactionSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   amount: z.number().positive("Amount must be positive"),
   type: z.enum(["INCOME", "EXPENSE"]),
-  categoryId: z.string().optional(),
+  categoryId: z.string().optional().transform(val => val === "" ? undefined : val),
   note: z.string().optional(),
   date: z.string(),
 });
@@ -76,13 +76,15 @@ export async function createTransaction(data: unknown) {
   const parsed = TransactionSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  await prisma.transaction.create({
-    data: {
-      ...parsed.data,
-      date: new Date(parsed.data.date),
-      userId,
-    },
-  });
+await prisma.transaction.create({
+  data: {
+    ...parsed.data,
+    date: new Date(parsed.data.date),
+    // Convert empty string to null — null means no category
+    categoryId: parsed.data.categoryId || null,
+    userId,
+  },
+});
 
   revalidatePath("/dashboard");
   revalidatePath("/transactions");
