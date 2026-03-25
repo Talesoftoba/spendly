@@ -6,6 +6,7 @@ import type {
   CategorySpending,
   BudgetWithCategory,
 } from "@/types";
+import { startOfMonth, subMonths } from "date-fns";
 
 // ─── Dashboard Stats ───────────────────────────────────────────────────────────
 
@@ -49,27 +50,37 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
 // ─── Monthly Chart Data (last 6 months) ───────────────────────────────────────
 
 export async function getMonthlyData(userId: string): Promise<MonthlyData[]> {
+  // Get the start of 6 months ago
+  const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+
+  // Single query for all transactions in the last 6 months
+  const txns = await prisma.transaction.findMany({
+    where: {
+      userId,
+      date: { gte: sixMonthsAgo },
+    },
+    select: {
+      amount: true,
+      type: true,
+      date: true,
+    },
+  });
+
+  // Build month buckets
   const months = Array.from({ length: 6 }, (_, i) => getMonthRange(5 - i));
 
-  const data = await Promise.all(
-    months.map(async ({ start, end, label }) => {
-      const txns = await prisma.transaction.findMany({
-        where: { userId, date: { gte: start, lte: end } },
-      });
-
-      const income = txns
-        .filter((t) => t.type === "INCOME")
-        .reduce((a, t) => a + t.amount, 0);
-
-      const expense = txns
-        .filter((t) => t.type === "EXPENSE")
-        .reduce((a, t) => a + t.amount, 0);
-
-      return { month: label, income, expense };
-    })
-  );
-
-  return data;
+  return months.map(({ start, end, label }) => {
+    const monthTxns = txns.filter(
+      (t) => t.date >= start && t.date <= end
+    );
+    const income = monthTxns
+      .filter((t) => t.type === "INCOME")
+      .reduce((a, t) => a + t.amount, 0);
+    const expense = monthTxns
+      .filter((t) => t.type === "EXPENSE")
+      .reduce((a, t) => a + t.amount, 0);
+    return { month: label, income, expense };
+  });
 }
 
 // ─── Category Spending (current month) ────────────────────────────────────────
@@ -114,28 +125,37 @@ export async function getBudgetsWithSpent(
 ): Promise<BudgetWithCategory[]> {
   const { start, end, month, year } = getMonthRange(0);
 
-  const budgets = await prisma.budget.findMany({
-    where: { userId, month, year },
-    include: { category: true },
+  // Get budgets and all this month's expenses in parallel — just 2 queries
+  const [budgets, expenses] = await Promise.all([
+    prisma.budget.findMany({
+      where: { userId, month, year },
+      include: { category: true },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        userId,
+        type: "EXPENSE",
+        date: { gte: start, lte: end },
+        categoryId: { not: null },
+      },
+      select: { categoryId: true, amount: true },
+    }),
+  ]);
+
+  // Group expenses by categoryId in JavaScript
+  const spentByCategory: Record<string, number> = {};
+  expenses.forEach((e) => {
+    if (e.categoryId) {
+      spentByCategory[e.categoryId] =
+        (spentByCategory[e.categoryId] ?? 0) + e.amount;
+    }
   });
 
-  const budgetsWithSpent = await Promise.all(
-    budgets.map(async (budget) => {
-      const spent = await prisma.transaction.aggregate({
-        where: {
-          userId,
-          categoryId: budget.categoryId,
-          type: "EXPENSE",
-          date: { gte: start, lte: end },
-        },
-        _sum: { amount: true },
-      });
-
-      return { ...budget, spent: spent._sum.amount ?? 0 };
-    })
-  );
-
-  return budgetsWithSpent;
+  // Attach spent amount to each budget
+  return budgets.map((budget) => ({
+    ...budget,
+    spent: spentByCategory[budget.categoryId] ?? 0,
+  }));
 }
 
 // ─── Recent Transactions ───────────────────────────────────────────────────────
