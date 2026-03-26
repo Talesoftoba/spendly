@@ -14,22 +14,25 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
   const current = getMonthRange(0);
   const previous = getMonthRange(1);
 
-  const [currentTxns, previousTxns, allTxns] = await Promise.all([
-    prisma.transaction.findMany({
-      where: { userId, date: { gte: current.start, lte: current.end } },
-    }),
-    prisma.transaction.findMany({
-      where: { userId, date: { gte: previous.start, lte: previous.end } },
-    }),
-    prisma.transaction.findMany({
-      where: { userId },
-    }),
-  ]);
+  //  ONLY ONE QUERY
+  const allTxns = await prisma.transaction.findMany({
+    where: { userId },
+  });
 
-  const sum = (txns: typeof currentTxns, type: "INCOME" | "EXPENSE") =>
+  // helper
+  const sum = (txns: typeof allTxns, type: "INCOME" | "EXPENSE") =>
     txns
       .filter((t) => t.type === type)
       .reduce((acc, t) => acc + t.amount, 0);
+
+  // filter in JS instead of DB
+  const currentTxns = allTxns.filter(
+    (t) => t.date >= current.start && t.date <= current.end
+  );
+
+  const previousTxns = allTxns.filter(
+    (t) => t.date >= previous.start && t.date <= previous.end
+  );
 
   const monthlyIncome = sum(currentTxns, "INCOME");
   const monthlyExpenses = sum(currentTxns, "EXPENSE");

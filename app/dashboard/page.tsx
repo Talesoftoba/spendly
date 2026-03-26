@@ -16,16 +16,20 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  // All queries run at the same time — not one after another
-  const [stats, monthlyData, categorySpending, budgets, recentTransactions] =
-    await Promise.all([
-      getDashboardStats(userId),
-      getMonthlyData(userId),
-      getCategorySpending(userId),
-      getBudgetsWithSpent(userId),
-      getRecentTransactions(userId, 6),
-    ]);
+  // 1️⃣ Fetch stats first (already optimized)
+  const stats = await getDashboardStats(userId);
 
+  // 2️⃣ Fetch monthly data and category spending in parallel (only 2 queries)
+  const [monthlyData, categorySpending] = await Promise.all([
+    getMonthlyData(userId),
+    getCategorySpending(userId),
+  ]);
+
+  // 3️⃣ Fetch budgets and recent transactions sequentially
+  const budgets = await getBudgetsWithSpent(userId);
+  const recentTransactions = await getRecentTransactions(userId, 6);
+
+  // Return the dashboard client
   return (
     <DashboardClient
       stats={stats}
