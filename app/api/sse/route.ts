@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth"; 
-import { getOverBudgetAlerts } from "@/app/lib/data";
+import { getOverBudgetAlerts } from "@/app/lib/data"; 
 
 export const dynamic = "force-dynamic";
 
@@ -14,25 +14,25 @@ export async function GET() {
   const userId = session.user.id;
   let closed = false;
 
+  // Track which categories have already been alerted this session
+  const alertedCategories = new Set<string>();
+
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
 
       const send = (data: object) => {
-        // Guard — never write to a closed controller
         if (closed) return;
         try {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
           );
         } catch {
-          // Stream already closed — mark it and stop
           closed = true;
         }
       };
 
       const checkAlerts = async () => {
-        // Stop everything if client disconnected
         if (closed) {
           clearInterval(interval);
           return;
@@ -41,8 +41,13 @@ export async function GET() {
         try {
           const overBudget = await getOverBudgetAlerts(userId);
 
-          if (overBudget.length > 0) {
-            overBudget.forEach((b) => {
+          overBudget.forEach((b) => {
+            const key = `${b.category.name}-${b.category.id}`;
+
+            // Only send alert if we haven't already sent one
+            // for this category in this session
+            if (!alertedCategories.has(key)) {
+              alertedCategories.add(key);
               send({
                 type: "budget_alert",
                 categoryName: b.category.name,
@@ -50,25 +55,34 @@ export async function GET() {
                 limit: b.limit,
                 overBy: b.spent - b.limit,
               });
-            });
-          } else {
+            }
+          });
+
+          // If a category comes back under budget
+          // remove it from alerted so it can alert again if overspent later
+          const overBudgetKeys = new Set(
+            overBudget.map((b) => `${b.category.name}-${b.category.id}`)
+          );
+          alertedCategories.forEach((key) => {
+            if (!overBudgetKeys.has(key)) {
+              alertedCategories.delete(key);
+            }
+          });
+
+          // Send heartbeat only if no alerts fired
+          if (overBudget.length === 0) {
             send({ type: "heartbeat", timestamp: Date.now() });
           }
+
         } catch {
-          // DB error — don't crash, just skip this check
+          // DB error — skip this check
         }
       };
 
-      // Send initial connection confirmation
       send({ type: "connected", message: "Live alerts active" });
-
-      // First check immediately
       await checkAlerts();
-
-      // Then every 30 seconds
       const interval = setInterval(checkAlerts, 30_000);
 
-      // This runs when the client disconnects
       return () => {
         closed = true;
         clearInterval(interval);
