@@ -85,86 +85,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   );
 };
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
 
-type StatCardProps = {
-  label: string;
-  value: string;
-  sub: string;
-  accent: string;
-  positive?: boolean;
-};
-
-function StatCard({ label, value, sub, accent, positive }: StatCardProps) {
-  return (
-    <div
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: "16px",
-        padding: "24px",
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        transition: "border-color 0.2s, transform 0.2s",
-        cursor: "default",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = accent;
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--border)";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-    >
-      {/* Accent glow in top right corner */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          width: "80px",
-          height: "80px",
-          background: `radial-gradient(circle at top right, ${accent}33, transparent 70%)`,
-          pointerEvents: "none",
-        }}
-      />
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          marginBottom: "12px",
-        }}
-      >
-        {label}
-      </p>
-      <p
-        style={{
-          fontFamily: "(--font-display)",
-          fontSize: "28px",
-          fontWeight: 700,
-          color: "#fff",
-          marginBottom: "6px",
-          letterSpacing: "-0.03em",
-        }}
-      >
-        {value}
-      </p>
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "12px",
-          color: positive === false ? "#ff6b47" : accent,
-        }}
-      >
-        {sub}
-      </p>
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -179,42 +100,127 @@ export function DashboardClient({
   return (
     <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
-      {/* ── Stat Cards ─────────────────────────────────────────────────── */}
+      {/* ── Stat Cards ─────────────────────────────────────────── */}
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "12px",
+    marginBottom: "16px",
+  }}
+>
+  {[
+    {
+      label: "Total Balance",
+      value: formatCurrency(stats.totalBalance, currency),
+      sub: "Net all-time savings",
+      accent: "#e8ff47",
+      positive: true,
+    },
+    {
+      label: "Monthly Income",
+      value: formatCurrency(stats.monthlyIncome, currency),
+      sub: `${stats.incomeChange >= 0 ? "↑" : "↓"} ${Math.abs(stats.incomeChange)}% vs last month`,
+      accent: "#47ffe8",
+      positive: stats.incomeChange >= 0,
+    },
+    {
+      label: "Monthly Expenses",
+      value: formatCurrency(stats.monthlyExpenses, currency),
+      sub: `${stats.expenseChange <= 0 ? "↓" : "↑"} ${Math.abs(stats.expenseChange)}% vs last month`,
+      accent: "#4778ff",
+      positive: stats.expenseChange <= 0,
+    },
+    {
+      label: "Net Savings",
+      value: formatCurrency(stats.netSavings, currency),
+      sub: stats.netSavings >= 0 ? "↑ On track" : "↓ Overspending",
+      accent: "#a847ff",
+      positive: stats.netSavings >= 0,
+    },
+  ].map((card) => (
+    <div
+      key={card.label}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        borderRadius: "16px",
+        padding: "16px",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        transition: "border-color 0.2s, transform 0.2s",
+        cursor: "default",
+        minHeight: "110px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = card.accent;
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      {/* Accent glow */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "12px",
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: "60px",
+          height: "60px",
+          background: `radial-gradient(circle at top right, ${card.accent}33, transparent 70%)`,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Label */}
+      <p
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "10px",
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          marginBottom: "8px",
         }}
       >
-        <StatCard
-          label="Total Balance"
-          value={formatCurrency(stats.totalBalance, currency)}
-          sub="Net all-time savings"
-          accent="#e8ff47"
-        />
-        <StatCard
-          label="Monthly Income"
-          value={formatCurrency(stats.monthlyIncome, currency)}
-          sub={`${stats.incomeChange >= 0 ? "↑" : "↓"} ${Math.abs(stats.incomeChange)}% vs last month`}
-          accent="#47ffe8"
-          positive={stats.incomeChange >= 0}
-        />
-        <StatCard
-          label="Monthly Expenses"
-          value={formatCurrency(stats.monthlyExpenses, currency)}
-          sub={`${stats.expenseChange <= 0 ? "↓" : "↑"} ${Math.abs(stats.expenseChange)}% vs last month`}
-          accent="#4778ff"
-          positive={stats.expenseChange <= 0}
-        />
-        <StatCard
-          label="Net Savings"
-          value={formatCurrency(stats.netSavings, currency)}
-          sub={stats.netSavings >= 0 ? "↑ On track" : "↓ Overspending"}
-          accent="#a847ff"
-          positive={stats.netSavings >= 0}
-        />
-      </div>
+        {card.label}
+      </p>
+
+      {/* Value */}
+      <p
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "clamp(16px, 3vw, 24px)",
+          fontWeight: 800,
+          color: "var(--text-primary)",
+          letterSpacing: "-0.03em",
+          lineHeight: 1.1,
+          marginBottom: "8px",
+          wordBreak: "break-word",
+        }}
+      >
+        {card.value}
+      </p>
+
+      {/* Sub */}
+      <p
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "11px",
+          color: card.positive === false ? "#ff6b47" : card.accent,
+        }}
+      >
+        {card.sub}
+      </p>
+    </div>
+  ))}
+</div>
+
 
       {/* ── Charts Row ─────────────────────────────────────────────────── */}
       <div

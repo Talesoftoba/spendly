@@ -369,7 +369,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           >
             {/* Desktop sidebar toggle */}
             <button
-              className="desktop-sidebar"
+              className="desktop-only"
               onClick={() => setSidebarOpen((o) => !o)}
               style={{
                 width: "32px",
@@ -395,7 +395,25 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               {sidebarOpen ? <X size={14} /> : <Menu size={14} />}
             </button>
 
-           
+           {/* Mobile logo — only shows on mobile */}
+<div
+  style={{
+    width: "28px",
+    height: "28px",
+    borderRadius: "8px",
+    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 900,
+    fontSize: "13px",
+    color: "#080808",
+    flexShrink: 0,
+  }}
+  className="mobile-only"
+>
+  S
+</div>
 
             <div style={{ minWidth: 0 }}>
               <h1
