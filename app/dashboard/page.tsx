@@ -16,16 +16,16 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  // 1️⃣ Fetch stats first (already optimized)
+  // 1 Fetch stats first (already optimized)
   const stats = await getDashboardStats(userId);
 
-  // 2️⃣ Fetch monthly data and category spending in parallel (only 2 queries)
+  // 2 Fetch monthly data and category spending in parallel (only 2 queries)
   const [monthlyData, categorySpending] = await Promise.all([
     getMonthlyData(userId),
     getCategorySpending(userId),
   ]);
 
-  // 3️⃣ Fetch budgets and recent transactions sequentially
+  // 3 Fetch budgets and recent transactions sequentially
   const budgets = await getBudgetsWithSpent(userId);
   const recentTransactions = await getRecentTransactions(userId, 6);
 
