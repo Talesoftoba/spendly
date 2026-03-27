@@ -33,9 +33,50 @@
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.14);
 
-  --text-primary: #0f0f0f;
-  --text-secondary: rgba(15, 15, 15, 0.6);
-  --text-muted: rgba(15, 15, 15, 0.35);
+  /* Darker text for better readability */
+  --text-primary: #0a0a0a;
+  --text-secondary: #2d2d2d;
+  --text-muted: #6b6b6b;
+}
+
+[data-theme="light"] body {
+  color: #0a0a0a;
+}
+
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] td,
+[data-theme="light"] th,
+[data-theme="light"] label,
+[data-theme="light"] button {
+  color: inherit;
+}
+
+/* Force all hardcoded white text to use theme variable */
+[data-theme="light"] [style*="color: #fff"],
+[data-theme="light"] [style*="color: white"],
+[data-theme="light"] [style*='color: "#fff"'] {
+  color: #0a0a0a !important;
+}
+
+[data-theme="light"] [style*="color: rgba(255,255,255"],
+[data-theme="light"] [style*="color: rgba(255, 255, 255"] {
+  color: #6b6b6b !important;
+}
+
+/* Nav active item stays yellow in light mode */
+[data-theme="light"] nav a[style*="color: #e8ff47"] {
+  color: #5a6e00 !important;
+}
+
+/* Cards get a proper shadow in light mode */
+[data-theme="light"] [style*="var(--bg-card)"],
+[data-theme="light"] [style*="background: var(--bg-card)"] {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 /* ── Reset ────────────────────────────────────────────────────── */

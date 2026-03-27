@@ -395,24 +395,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               {sidebarOpen ? <X size={14} /> : <Menu size={14} />}
             </button>
 
-            {/* Mobile logo */}
-            <div
-              className="mobile-bottom-nav"
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "8px",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 900,
-                fontSize: "13px",
-                color: "#080808",
-                flexShrink: 0,
-              }}
-            >
-              S
-            </div>
+           
 
             <div style={{ minWidth: 0 }}>
               <h1
