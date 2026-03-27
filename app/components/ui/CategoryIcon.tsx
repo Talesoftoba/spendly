@@ -56,7 +56,7 @@ export function CategoryIcon({ name, color, size = "md" }: Props) {
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
-        fontFamily: "var(--font-syne)",
+        fontFamily: "(--font-display)",
         fontWeight: 800,
         fontSize: `${s.font}px`,
         color: iconColor,

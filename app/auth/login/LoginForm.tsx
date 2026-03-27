@@ -45,7 +45,7 @@ export default function LoginForm() {
     color: "#fff",
     caretColor: "#fff",
     WebkitTextFillColor: "#fff",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "14px",
     outline: "none",
     transition: "border-color 0.2s",
@@ -54,7 +54,7 @@ export default function LoginForm() {
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "11px",
     color: "var(--text-muted)",
     textTransform: "uppercase",
@@ -96,7 +96,7 @@ export default function LoginForm() {
           </div>
           <h1
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontSize: "24px",
               fontWeight: 800,
               color: "#fff",
@@ -108,7 +108,7 @@ export default function LoginForm() {
           </h1>
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "13px",
               color: "var(--text-muted)",
             }}
@@ -163,7 +163,7 @@ export default function LoginForm() {
           {error && (
             <p
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "12px",
                 color: "#ff6b47",
                 background: "rgba(255,107,71,0.1)",
@@ -187,7 +187,7 @@ export default function LoginForm() {
               border: "none",
               background: "#e8ff47",
               color: "#080808",
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontWeight: 700,
               fontSize: "14px",
               cursor: loading ? "not-allowed" : "pointer",
@@ -202,7 +202,7 @@ export default function LoginForm() {
           <p
             style={{
               textAlign: "center",
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "12px",
               color: "var(--text-muted)",
             }}

@@ -145,7 +145,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     color: "var(--text-primary)",
     caretColor: "var(--text-primary)",
     WebkitTextFillColor: "var(--text-primary)",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "14px",
     outline: "none",
     transition: "border-color 0.2s",
@@ -153,7 +153,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "11px",
     color: "var(--text-muted)",
     textTransform: "uppercase",
@@ -170,7 +170,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
   };
 
   const sectionTitleStyle: React.CSSProperties = {
-    fontFamily: "var(--font-syne)",
+    fontFamily: "(--font-display)",
     fontSize: "16px",
     fontWeight: 800,
     color: "var(--text-primary)",
@@ -193,17 +193,17 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 width: "56px", height: "56px", borderRadius: "50%",
                 background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "var(--font-syne)", fontWeight: 800, fontSize: "22px",
+                fontFamily: "(--font-display)", fontWeight: 800, fontSize: "22px",
                 color: "#080808", flexShrink: 0,
               }}
             >
               {name?.[0]?.toUpperCase() ?? session?.user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div>
-              <p style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "15px", color: "var(--text-primary)", marginBottom: "2px" }}>
+              <p style={{ fontFamily: "(--font-display)", fontWeight: 700, fontSize: "15px", color: "var(--text-primary)", marginBottom: "2px" }}>
                 {name || session?.user?.name || "User"}
               </p>
-              <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "12px", color: "var(--text-muted)" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)" }}>
                 {session?.user?.email ?? ""}
               </p>
             </div>
@@ -231,7 +231,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
               readOnly
               style={{ ...inputStyle, opacity: 0.5, cursor: "not-allowed" }}
             />
-            <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)", marginTop: "6px" }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", marginTop: "6px" }}>
               Email cannot be changed
             </p>
           </div>
@@ -255,7 +255,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
           {/* Error */}
           {saveError && (
-            <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "12px", color: "#ff6b47", padding: "10px 14px", borderRadius: "8px", background: "rgba(255,107,71,0.08)", border: "1px solid rgba(255,107,71,0.2)" }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#ff6b47", padding: "10px 14px", borderRadius: "8px", background: "rgba(255,107,71,0.08)", border: "1px solid rgba(255,107,71,0.2)" }}>
               {saveError}
             </p>
           )}
@@ -267,7 +267,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
             style={{
               alignSelf: "flex-start", padding: "10px 24px", borderRadius: "10px",
               border: "none", background: saved ? "rgba(71,255,232,0.15)" : "#e8ff47",
-              color: saved ? "#47ffe8" : "#080808", fontFamily: "var(--font-syne)",
+              color: saved ? "#47ffe8" : "#080808", fontFamily: "(--font-display)",
               fontWeight: 700, fontSize: "13px", cursor: saving ? "not-allowed" : "pointer",
               opacity: saving ? 0.6 : 1, transition: "all 0.3s", marginTop: "4px",
             }}
@@ -286,7 +286,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
             style={{
               display: "flex", alignItems: "center", gap: "6px",
               padding: "8px 16px", borderRadius: "10px", border: "none",
-              background: "#e8ff47", color: "#080808", fontFamily: "var(--font-syne)",
+              background: "#e8ff47", color: "#080808", fontFamily: "(--font-display)",
               fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "opacity 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
@@ -321,7 +321,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 {/* Name */}
                 <p
                   style={{
-                    flex: 1, fontFamily: "var(--font-syne)", fontSize: "14px",
+                    flex: 1, fontFamily: "(--font-display)", fontSize: "14px",
                     fontWeight: 600, color: "var(--text-primary)",
                   }}
                 >
@@ -365,7 +365,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 {["Housing", "Food", "Transport", "Shopping", "Bills", "Entertainment", "Income"].includes(cat.name) && (
                   <span
                     style={{
-                      fontFamily: "var(--font-dm-mono)", fontSize: "10px",
+                      fontFamily: "var(--font-mono)", fontSize: "10px",
                       color: "var(--text-muted)", padding: "3px 8px",
                       borderRadius: "6px", background: "rgba(255,255,255,0.04)",
                       border: "1px solid var(--border)",
@@ -380,7 +380,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
               {deleteError[cat.id] && (
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-mono)", fontSize: "11px",
+                    fontFamily: "var(--font-mono)", fontSize: "11px",
                     color: "#ff6b47", marginTop: "6px", paddingLeft: "14px",
                   }}
                 >
@@ -416,10 +416,10 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = "var(--border)"; }}
               >
                 <div>
-                  <p style={{ fontFamily: "var(--font-syne)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>
+                  <p style={{ fontFamily: "(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>
                     {t.label}
                   </p>
-                  <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
                     {t.sub}
                   </p>
                 </div>
@@ -447,8 +447,8 @@ export function SettingsClient({ categories: initialCategories }: Props) {
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border)"; }}
         >
           <div>
-            <p style={{ fontFamily: "var(--font-syne)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>Sign Out</p>
-            <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)" }}>Sign out of your Spendly account</p>
+            <p style={{ fontFamily: "(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>Sign Out</p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>Sign out of your Spendly account</p>
           </div>
           <span style={{ color: "var(--text-muted)", fontSize: "18px" }}>→</span>
         </button>
@@ -456,17 +456,17 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
       {/* ── Danger Zone ────────────────────────────────────────── */}
       <div style={{ ...sectionStyle, border: "1px solid rgba(255,107,71,0.2)" }}>
-        <p style={{ fontFamily: "var(--font-syne)", fontSize: "16px", fontWeight: 800, color: "#ff6b47", letterSpacing: "-0.02em", marginBottom: "8px" }}>
+        <p style={{ fontFamily: "(--font-display)", fontSize: "16px", fontWeight: 800, color: "#ff6b47", letterSpacing: "-0.02em", marginBottom: "8px" }}>
           Danger Zone
         </p>
-        <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "12px", color: "var(--text-muted)", marginBottom: "20px" }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)", marginBottom: "20px" }}>
           These actions are permanent and cannot be undone.
         </p>
         <button
           style={{
             padding: "10px 20px", borderRadius: "10px",
             border: "1px solid rgba(255,107,71,0.3)", background: "rgba(255,107,71,0.1)",
-            color: "#ff6b47", fontFamily: "var(--font-syne)", fontWeight: 700,
+            color: "#ff6b47", fontFamily: "(--font-display)", fontWeight: 700,
             fontSize: "13px", cursor: "pointer", transition: "all 0.2s",
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,107,71,0.2)"; e.currentTarget.style.borderColor = "rgba(255,107,71,0.5)"; }}
@@ -494,7 +494,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
           >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontFamily: "var(--font-syne)", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em" }}>
+              <h2 style={{ fontFamily: "(--font-display)", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em" }}>
                 New Category
               </h2>
               <button
@@ -522,10 +522,10 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   size="lg"
                 />
                 <div>
-                  <p style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "15px", color: "#fff", marginBottom: "2px" }}>
+                  <p style={{ fontFamily: "(--font-display)", fontWeight: 700, fontSize: "15px", color: "#fff", marginBottom: "2px" }}>
                     {catName || "Category Name"}
                   </p>
-                  <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
                     Preview
                   </p>
                 </div>
@@ -533,7 +533,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
               {/* Name input */}
               <div>
-                <label style={{ display: "block", fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
+                <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
                   Category Name
                 </label>
                 <input
@@ -545,7 +545,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                     width: "100%", background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px",
                     padding: "10px 14px", color: "#fff", caretColor: "#fff",
-                    WebkitTextFillColor: "#fff", fontFamily: "var(--font-dm-mono)",
+                    WebkitTextFillColor: "#fff", fontFamily: "var(--font-mono)",
                     fontSize: "13px", outline: "none",
                   }}
                   onFocus={(e) => (e.target.style.borderColor = "rgba(232,255,71,0.5)")}
@@ -555,7 +555,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
               {/* Color picker */}
               <div>
-                <label style={{ display: "block", fontFamily: "var(--font-dm-mono)", fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>
+                <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>
                   Color
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "8px" }}>
@@ -578,7 +578,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
               {/* Error */}
               {catError && (
-                <p style={{ fontFamily: "var(--font-dm-mono)", fontSize: "12px", color: "#ff6b47" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#ff6b47" }}>
                   {catError}
                 </p>
               )}
@@ -590,7 +590,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 style={{
                   width: "100%", padding: "13px", borderRadius: "12px",
                   border: "none", background: "#e8ff47", color: "#080808",
-                  fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "14px",
+                  fontFamily: "(--font-display)", fontWeight: 700, fontSize: "14px",
                   cursor: isPending ? "not-allowed" : "pointer",
                   opacity: isPending ? 0.6 : 1, transition: "opacity 0.2s",
                 }}

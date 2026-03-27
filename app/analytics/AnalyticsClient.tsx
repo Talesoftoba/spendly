@@ -44,7 +44,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     >
       <p
         style={{
-          fontFamily: "var(--font-dm-mono)",
+          fontFamily: "var(--font-mono)",
           fontSize: "11px",
           color: "var(--text-muted)",
           marginBottom: "8px",
@@ -56,7 +56,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         <p
           key={i}
           style={{
-            fontFamily: "var(--font-dm-mono)",
+            fontFamily: "var(--font-mono)",
             fontSize: "12px",
             color: p.color,
           }}
@@ -118,7 +118,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           >
             <p
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "11px",
                 color: "var(--text-muted)",
                 textTransform: "uppercase",
@@ -130,7 +130,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
             </p>
             <p
               style={{
-                fontFamily: "var(--font-syne)",
+                fontFamily: "(--font-display)",
                 fontSize: "28px",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
@@ -155,7 +155,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         <div style={{ marginBottom: "24px" }}>
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "11px",
               color: "var(--text-muted)",
               textTransform: "uppercase",
@@ -167,7 +167,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -187,7 +187,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
             <XAxis
               dataKey="month"
               tick={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 fill: "rgba(255,255,255,0.3)",
               }}
@@ -196,7 +196,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
             />
             <YAxis
               tick={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 fill: "rgba(255,255,255,0.3)",
               }}
@@ -250,7 +250,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
               />
               <span
                 style={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: "12px",
                   color: "var(--text-muted)",
                 }}
@@ -274,7 +274,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         <div style={{ marginBottom: "24px" }}>
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "11px",
               color: "var(--text-muted)",
               textTransform: "uppercase",
@@ -286,7 +286,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -300,7 +300,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         {categorySpending.length === 0 ? (
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "13px",
               color: "var(--text-muted)",
               textAlign: "center",
@@ -350,7 +350,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                      
                       <span
                         style={{
-                          fontFamily: "var(--font-syne)",
+                          fontFamily: "(--font-display)",
                           fontSize: "14px",
                           fontWeight: 600,
                           color: "#fff",
@@ -368,7 +368,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                     >
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-mono)",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "13px",
                           color: "var(--text-secondary)",
                         }}
@@ -377,7 +377,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                       </span>
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-mono)",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "11px",
                           color: "var(--text-muted)",
                           minWidth: "36px",
@@ -427,7 +427,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         <div style={{ marginBottom: "24px" }}>
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "11px",
               color: "var(--text-muted)",
               textTransform: "uppercase",
@@ -439,7 +439,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -476,7 +476,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
               >
                 <span
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "13px",
                     color: "var(--text-muted)",
                     minWidth: "40px",
@@ -506,7 +506,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                 </div>
                 <span
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "13px",
                     fontWeight: 500,
                     color: positive ? "#47ffe8" : "#ff6b47",

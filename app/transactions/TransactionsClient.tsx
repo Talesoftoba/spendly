@@ -90,7 +90,7 @@ export function TransactionsClient({
     color: "var(--text-primary)",
     caretColor: "var(--text-primary)",
     WebkitTextFillColor: "var(--text-primary)",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "13px",
     outline: "none",
     transition: "border-color 0.2s",
@@ -98,7 +98,7 @@ export function TransactionsClient({
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "11px",
     color: "var(--text-muted)",
     textTransform: "uppercase",
@@ -162,7 +162,7 @@ export function TransactionsClient({
                 background:
                   filter === f ? "rgba(232,255,71,0.1)" : "transparent",
                 color: filter === f ? "#e8ff47" : "var(--text-muted)",
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "12px",
                 cursor: "pointer",
                 transition: "all 0.2s",
@@ -183,7 +183,7 @@ export function TransactionsClient({
               border: "none",
               background: "#e8ff47",
               color: "#080808",
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontWeight: 700,
               fontSize: "13px",
               cursor: "pointer",
@@ -198,6 +198,7 @@ export function TransactionsClient({
         </div>
 
         {/* ── Table ────────────────────────────────────────────────── */}
+        <div style={{ overflow: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -207,7 +208,7 @@ export function TransactionsClient({
                   style={{
                     padding: "12px 20px",
                     textAlign: "left",
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "11px",
                     color: "var(--text-muted)",
                     letterSpacing: "0.08em",
@@ -228,7 +229,7 @@ export function TransactionsClient({
                   style={{
                     padding: "48px",
                     textAlign: "center",
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "13px",
                     color: "var(--text-muted)",
                   }}
@@ -271,7 +272,7 @@ export function TransactionsClient({
 />
                       <span
                         style={{
-                          fontFamily: "var(--font-syne)",
+                          fontFamily: "(--font-display)",
                           fontSize: "13px",
                           fontWeight: 600,
                           color: "var(--text-primary)",
@@ -286,7 +287,7 @@ export function TransactionsClient({
                   <td style={{ padding: "14px 20px" }}>
                     <span
                       style={{
-                        fontFamily: "var(--font-dm-mono)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "12px",
                         padding: "4px 10px",
                         borderRadius: "6px",
@@ -302,7 +303,7 @@ export function TransactionsClient({
                   <td
                     style={{
                       padding: "14px 20px",
-                      fontFamily: "var(--font-dm-mono)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "12px",
                       color: "var(--text-muted)",
                     }}
@@ -314,7 +315,7 @@ export function TransactionsClient({
                   <td
                     style={{
                       padding: "14px 20px",
-                      fontFamily: "var(--font-dm-mono)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "14px",
                       fontWeight: 600,
                       color:
@@ -363,6 +364,7 @@ export function TransactionsClient({
           </tbody>
         </table>
       </div>
+      </div>
 
       {/* ── Add Transaction Modal ─────────────────────────────────────── */}
       {showModal && (
@@ -399,7 +401,7 @@ export function TransactionsClient({
             >
               <h2
                 style={{
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "(--font-display)",
                   fontSize: "18px",
                   fontWeight: 800,
                   color: "#fff",
@@ -442,7 +444,7 @@ export function TransactionsClient({
                       flex: 1,
                       padding: "10px",
                       borderRadius: "10px",
-                      fontFamily: "var(--font-syne)",
+                      fontFamily: "(--font-display)",
                       fontWeight: 700,
                       fontSize: "13px",
                       cursor: "pointer",
@@ -576,7 +578,7 @@ export function TransactionsClient({
               {formError && (
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "12px",
                     color: "#ff6b47",
                   }}
@@ -596,7 +598,7 @@ export function TransactionsClient({
                   border: "none",
                   background: "#e8ff47",
                   color: "#080808",
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "(--font-display)",
                   fontWeight: 700,
                   fontSize: "14px",
                   cursor: isPending ? "not-allowed" : "pointer",

@@ -61,7 +61,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     >
       <p
         style={{
-          fontFamily: "var(--font-dm-mono)",
+          fontFamily: "var(--font-mono)",
           fontSize: "11px",
           color: "var(--text-muted)",
           marginBottom: "8px",
@@ -73,7 +73,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
         <p
           key={i}
           style={{
-            fontFamily: "var(--font-dm-mono)",
+            fontFamily: "var(--font-mono)",
             fontSize: "12px",
             color: p.color,
           }}
@@ -131,7 +131,7 @@ function StatCard({ label, value, sub, accent, positive }: StatCardProps) {
       />
       <p
         style={{
-          fontFamily: "var(--font-dm-mono)",
+          fontFamily: "var(--font-mono)",
           fontSize: "11px",
           color: "var(--text-muted)",
           textTransform: "uppercase",
@@ -143,7 +143,7 @@ function StatCard({ label, value, sub, accent, positive }: StatCardProps) {
       </p>
       <p
         style={{
-          fontFamily: "var(--font-syne)",
+          fontFamily: "(--font-display)",
           fontSize: "28px",
           fontWeight: 700,
           color: "#fff",
@@ -155,7 +155,7 @@ function StatCard({ label, value, sub, accent, positive }: StatCardProps) {
       </p>
       <p
         style={{
-          fontFamily: "var(--font-dm-mono)",
+          fontFamily: "var(--font-mono)",
           fontSize: "12px",
           color: positive === false ? "#ff6b47" : accent,
         }}
@@ -183,8 +183,8 @@ export function DashboardClient({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "16px",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "12px",
         }}
       >
         <StatCard
@@ -220,8 +220,8 @@ export function DashboardClient({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          gap: "16px",
+          gridTemplateColumns: "minmax(0, 1fr)",
+          gap: "12px",
         }}
       >
         {/* Cash Flow Area Chart */}
@@ -244,7 +244,7 @@ export function DashboardClient({
             <div>
               <p
                 style={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: "11px",
                   color: "var(--text-muted)",
                   textTransform: "uppercase",
@@ -256,7 +256,7 @@ export function DashboardClient({
               </p>
               <p
                 style={{
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "(--font-display)",
                   fontSize: "20px",
                   fontWeight: 800,
                   color: "#fff",
@@ -285,7 +285,7 @@ export function DashboardClient({
                   />
                   <span
                     style={{
-                      fontFamily: "var(--font-dm-mono)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "11px",
                       color: "var(--text-muted)",
                     }}
@@ -316,7 +316,7 @@ export function DashboardClient({
               <XAxis
                 dataKey="month"
                 tick={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: 11,
                   fill: "rgba(255,255,255,0.3)",
                 }}
@@ -325,7 +325,7 @@ export function DashboardClient({
               />
               <YAxis
                 tick={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: 11,
                   fill: "rgba(255,255,255,0.3)",
                 }}
@@ -365,7 +365,7 @@ export function DashboardClient({
         >
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "11px",
               color: "var(--text-muted)",
               textTransform: "uppercase",
@@ -377,7 +377,7 @@ export function DashboardClient({
           </p>
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -391,7 +391,7 @@ export function DashboardClient({
           {categorySpending.length === 0 ? (
             <p
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "13px",
                 color: "var(--text-muted)",
                 textAlign: "center",
@@ -422,7 +422,7 @@ export function DashboardClient({
                       background: "#0f0f0f",
                       border: "1px solid rgba(255,255,255,0.1)",
                       borderRadius: "10px",
-                      fontFamily: "var(--font-dm-mono)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "12px",
                     }}
                   />
@@ -453,7 +453,7 @@ export function DashboardClient({
                     />
                     <span
                       style={{
-                        fontFamily: "var(--font-dm-mono)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "11px",
                         color: "var(--text-secondary)",
                         whiteSpace: "nowrap",
@@ -473,10 +473,10 @@ export function DashboardClient({
 
       {/* ── Bottom Row ─────────────────────────────────────────────────── */}
       <div
-        style={{
+         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          gap: "16px",
+          gridTemplateColumns: "minmax(0, 1fr)",
+          gap: "12px",
         }}
       >
         {/* Recent Transactions */}
@@ -498,7 +498,7 @@ export function DashboardClient({
           >
             <p
               style={{
-                fontFamily: "var(--font-syne)",
+                fontFamily: "(--font-display)",
                 fontSize: "15px",
                 fontWeight: 700,
                 color: "#fff",
@@ -509,7 +509,7 @@ export function DashboardClient({
             <Link
               href="/transactions"
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "12px",
                 color: "var(--text-muted)",
                 textDecoration: "none",
@@ -528,7 +528,7 @@ export function DashboardClient({
             {recentTransactions.length === 0 && (
               <p
                 style={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: "13px",
                   color: "var(--text-muted)",
                   textAlign: "center",
@@ -568,7 +568,7 @@ export function DashboardClient({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
-                      fontFamily: "var(--font-syne)",
+                      fontFamily: "(--font-display)",
                       fontSize: "13px",
                       fontWeight: 600,
                       color: "#fff",
@@ -582,7 +582,7 @@ export function DashboardClient({
                   </p>
                   <p
                     style={{
-                      fontFamily: "var(--font-dm-mono)",
+                      fontFamily: "var(--font-mono)",
                       fontSize: "11px",
                       color: "var(--text-muted)",
                     }}
@@ -592,7 +592,7 @@ export function DashboardClient({
                 </div>
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "14px",
                     fontWeight: 500,
                     color: t.type === "INCOME" ? "#47ffe8" : "rgba(255,255,255,0.7)",
@@ -626,7 +626,7 @@ export function DashboardClient({
           >
             <p
               style={{
-                fontFamily: "var(--font-syne)",
+                fontFamily: "(--font-display)",
                 fontSize: "15px",
                 fontWeight: 700,
                 color: "#fff",
@@ -637,7 +637,7 @@ export function DashboardClient({
             <Link
               href="/budgets"
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "12px",
                 color: "var(--text-muted)",
                 textDecoration: "none",
@@ -655,7 +655,7 @@ export function DashboardClient({
           {budgets.length === 0 ? (
             <p
               style={{
-                fontFamily: "var(--font-dm-mono)",
+                fontFamily: "var(--font-mono)",
                 fontSize: "13px",
                 color: "var(--text-muted)",
                 textAlign: "center",
@@ -693,7 +693,7 @@ export function DashboardClient({
 />
   <span
     style={{
-      fontFamily: "var(--font-syne)",
+      fontFamily: "(--font-display)",
       fontSize: "13px",
       fontWeight: 600,
       color: "var(--text-primary)",
@@ -706,7 +706,7 @@ export function DashboardClient({
                       
                       <span
                         style={{
-                          fontFamily: "var(--font-dm-mono)",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "12px",
                           color: over ? "#ff6b47" : "var(--text-muted)",
                         }}
@@ -735,7 +735,7 @@ export function DashboardClient({
                     {over && (
                       <p
                         style={{
-                          fontFamily: "var(--font-dm-mono)",
+                          fontFamily: "var(--font-mono)",
                           fontSize: "10px",
                           color: "#ff6b47",
                           marginTop: "4px",

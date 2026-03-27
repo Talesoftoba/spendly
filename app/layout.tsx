@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
-import { Syne, DM_Mono } from "next/font/google";
+import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./components/layout/providers"; 
 import { getServerSession } from "next-auth";
-import { authOptions } from "./lib/auth";
+import { authOptions } from "./lib/auth"; 
 import { prisma } from "./lib/prisma";
 
-const syne = Syne({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-syne",
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-outfit",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
-const dmMono = DM_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-dm-mono",
-  weight: ["300", "400", "500"],
+  variable: "--font-mono",
+  weight: ["300", "400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -28,7 +28,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch user currency on server so it's available immediately
   let currency = "USD";
   try {
     const session = await getServerSession(authOptions);
@@ -40,7 +39,7 @@ export default async function RootLayout({
       if (user?.currency) currency = user.currency;
     }
   } catch {
-    // Default to USD if fetch fails
+    // Default to USD
   }
 
   return (
@@ -48,7 +47,7 @@ export default async function RootLayout({
       lang="en"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${syne.variable} ${dmMono.variable}`}
+      className={`${outfit.variable} ${jetbrainsMono.variable}`}
     >
       <body>
         <script

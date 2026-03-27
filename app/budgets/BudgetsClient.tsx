@@ -70,7 +70,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
     color: "#fff",
     caretColor: "#fff",
     WebkitTextFillColor: "#fff",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "13px",
     outline: "none",
     transition: "border-color 0.2s",
@@ -78,7 +78,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
 
   const labelStyle: React.CSSProperties = {
     display: "block",
-    fontFamily: "var(--font-dm-mono)",
+    fontFamily: "var(--font-mono)",
     fontSize: "11px",
     color: "var(--text-muted)",
     textTransform: "uppercase",
@@ -100,7 +100,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
       >
         <p
           style={{
-            fontFamily: "var(--font-dm-mono)",
+            fontFamily: "var(--font-mono)",
             fontSize: "13px",
             color: "var(--text-muted)",
           }}
@@ -122,7 +122,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
             border: "none",
             background: "#e8ff47",
             color: "#080808",
-            fontFamily: "var(--font-syne)",
+            fontFamily: "(--font-display)",
             fontWeight: 700,
             fontSize: "13px",
             cursor: "pointer",
@@ -163,7 +163,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
 
           <p
             style={{
-              fontFamily: "var(--font-syne)",
+              fontFamily: "(--font-display)",
               fontWeight: 700,
               fontSize: "16px",
               color: "#fff",
@@ -174,7 +174,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "var(--font-dm-mono)",
+              fontFamily: "var(--font-mono)",
               fontSize: "13px",
               color: "var(--text-muted)",
             }}
@@ -188,8 +188,8 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "16px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: "14px",
           }}
         >
           {budgets.map((b) => {
@@ -244,7 +244,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                     <div>
                       <p
                         style={{
-                          fontFamily: "var(--font-syne)",
+                          fontFamily: "(--font-display)",
                           fontWeight: 800,
                           fontSize: "16px",
                           color: "#fff",
@@ -256,7 +256,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                       {over && (
                         <span
                           style={{
-                            fontFamily: "var(--font-dm-mono)",
+                            fontFamily: "var(--font-mono)",
                             fontSize: "11px",
                             color: "#ff6b47",
                             background: "rgba(255,107,71,0.1)",
@@ -312,7 +312,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                   >
                     <span
                       style={{
-                        fontFamily: "var(--font-dm-mono)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "32px",
                         fontWeight: 300,
                         color: "#fff",
@@ -323,7 +323,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                     </span>
                     <span
                       style={{
-                        fontFamily: "var(--font-dm-mono)",
+                        fontFamily: "var(--font-mono)",
                         fontSize: "14px",
                         color: "var(--text-muted)",
                         marginBottom: "4px",
@@ -357,7 +357,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                 {/* Status text */}
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "12px",
                     color: over ? "#ff6b47" : "var(--text-muted)",
                   }}
@@ -408,7 +408,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
             >
               <h2
                 style={{
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "(--font-display)",
                   fontSize: "18px",
                   fontWeight: 800,
                   color: "#fff",
@@ -484,7 +484,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
               {/* Current month info */}
               <p
                 style={{
-                  fontFamily: "var(--font-dm-mono)",
+                  fontFamily: "var(--font-mono)",
                   fontSize: "11px",
                   color: "var(--text-muted)",
                   padding: "10px 12px",
@@ -508,7 +508,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
               {formError && (
                 <p
                   style={{
-                    fontFamily: "var(--font-dm-mono)",
+                    fontFamily: "var(--font-mono)",
                     fontSize: "12px",
                     color: "#ff6b47",
                   }}
@@ -528,7 +528,7 @@ export function BudgetsClient({ budgets: initial, categories }: Props) {
                   border: "none",
                   background: "#e8ff47",
                   color: "#080808",
-                  fontFamily: "var(--font-syne)",
+                  fontFamily: "(--font-display)",
                   fontWeight: 700,
                   fontSize: "14px",
                   cursor: isPending ? "not-allowed" : "pointer",
