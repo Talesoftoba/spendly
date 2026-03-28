@@ -65,18 +65,20 @@ export default function LoginForm() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100dvh",
+        width: "100%",
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
         background: "var(--bg-base)",
       }}
     >
       <div style={{ width: "100%", maxWidth: "360px" }}>
 
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div
             style={{
               width: "48px",
@@ -96,7 +98,7 @@ export default function LoginForm() {
           </div>
           <h1
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "24px",
               fontWeight: 800,
               color: "#fff",
@@ -117,16 +119,25 @@ export default function LoginForm() {
           </p>
         </div>
 
-        {/* Form */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
+        {/* Form card */}
+        <div
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            borderRadius: "20px",
+            padding: "24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+          }}
+        >
           {/* Email */}
           <div>
             <label style={labelStyle}>Email</label>
             <input
               type="email"
               autoComplete="email"
-              placeholder="you@example.com"
+             
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={inputStyle}
@@ -145,7 +156,7 @@ export default function LoginForm() {
             <input
               type="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+            
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -166,7 +177,8 @@ export default function LoginForm() {
                 fontFamily: "var(--font-mono)",
                 fontSize: "12px",
                 color: "#ff6b47",
-                background: "rgba(255,107,71,0.1)",
+                background: "rgba(255,107,71,0.08)",
+                border: "1px solid rgba(255,107,71,0.2)",
                 padding: "10px 14px",
                 borderRadius: "10px",
                 textAlign: "center",
@@ -187,7 +199,7 @@ export default function LoginForm() {
               border: "none",
               background: "#e8ff47",
               color: "#080808",
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: "14px",
               cursor: loading ? "not-allowed" : "pointer",
@@ -210,10 +222,43 @@ export default function LoginForm() {
             No account?{" "}
             <Link
               href="/auth/register"
-              style={{ color: "#e8ff47", textDecoration: "none" }}
+              style={{
+                color: "#e8ff47",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
             >
               Create one
             </Link>
+          </p>
+        </div>
+
+        {/* Demo hint */}
+        <div
+          style={{
+            marginTop: "12px",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+            }}
+          >
+            Spendly:{" "}
+            <span style={{ color: "var(--text-secondary)" }}>
+              spend
+            </span>{" "}
+            -{" "}
+            <span style={{ color: "var(--text-secondary)" }}>
+              save
+            </span>
           </p>
         </div>
       </div>

@@ -12,28 +12,28 @@ const fields: {
   key: FormKey;
   label: string;
   type: string;
-  placeholder: string;
+  
   autoComplete: string;
 }[] = [
   {
     key: "name",
     label: "Full Name",
     type: "text",
-    placeholder: "Sam Toba",
+   
     autoComplete: "name",
   },
   {
     key: "email",
     label: "Email",
     type: "email",
-    placeholder: "you@example.com",
+  
     autoComplete: "email",
   },
   {
     key: "password",
     label: "Password",
     type: "password",
-    placeholder: "Min. 8 characters",
+   
     autoComplete: "new-password",
   },
 ];
@@ -109,18 +109,20 @@ export default function RegisterForm() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100dvh",
+        width: "100%",
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "16px",
+        padding: "20px",
         background: "var(--bg-base)",
       }}
     >
       <div style={{ width: "100%", maxWidth: "360px" }}>
 
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
           <div
             style={{
               width: "48px",
@@ -140,7 +142,7 @@ export default function RegisterForm() {
           </div>
           <h1
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "24px",
               fontWeight: 800,
               color: "#fff",
@@ -161,15 +163,25 @@ export default function RegisterForm() {
           </p>
         </div>
 
-        {/* Form */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {fields.map(({ key, label, type, placeholder, autoComplete }) => (
+        {/* Form card */}
+        <div
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            borderRadius: "20px",
+            padding: "24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+          }}
+        >
+          {fields.map(({ key, label, type,  autoComplete }) => (
             <div key={key}>
               <label style={labelStyle}>{label}</label>
               <input
                 type={type}
                 autoComplete={autoComplete}
-                placeholder={placeholder}
+               
                 value={form[key]}
                 onChange={(e) => handleChange(key, e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -216,7 +228,7 @@ export default function RegisterForm() {
               border: "none",
               background: "#e8ff47",
               color: "#080808",
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontWeight: 700,
               fontSize: "14px",
               cursor: loading ? "not-allowed" : "pointer",
@@ -240,7 +252,11 @@ export default function RegisterForm() {
             Already have an account?{" "}
             <Link
               href="/auth/login"
-              style={{ color: "#e8ff47", textDecoration: "none" }}
+              style={{
+                color: "#e8ff47",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
             >
               Sign in
             </Link>

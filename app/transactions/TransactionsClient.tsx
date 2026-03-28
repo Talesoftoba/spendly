@@ -502,36 +502,36 @@ export function TransactionsClient({
 
       {/* ── Add Transaction Modal ──────────────────────────────── */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 50,
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            padding: "0",
-            background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(8px)",
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div
-            className="animate-slide-up"
-            style={{
-              width: "100%",
-              maxWidth: "520px",
-              borderRadius: "20px 20px 0 0",
-              padding: "24px 24px 32px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderBottom: "none",
-              maxHeight: "90dvh",
-              overflowY: "auto",
-            }}
-          >
+      <div
+  style={{
+    position: "fixed",
+    inset: 0,
+    zIndex: 50,
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    background: "rgba(0,0,0,0.6)",
+    backdropFilter: "blur(8px)",
+    paddingTop: "56px", // ← height of the header so modal never goes behind it
+  }}
+  onClick={(e) => {
+    if (e.target === e.currentTarget) setShowModal(false);
+  }}
+>
+       <div
+  className="animate-slide-up"
+  style={{
+    width: "100%",
+    maxWidth: "520px",
+    borderRadius: "20px 20px 0 0",
+    padding: "20px 24px 40px",
+    background: "var(--bg-card)",
+    border: "1px solid var(--border)",
+    borderBottom: "none",
+    maxHeight: "calc(100dvh - 56px)", // ← total screen minus header height
+    overflowY: "auto",
+  }}
+>
             {/* Handle bar */}
             <div
               style={{

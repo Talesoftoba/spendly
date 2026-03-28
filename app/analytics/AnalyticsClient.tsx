@@ -83,65 +83,73 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
       style={{ display: "flex", flexDirection: "column", gap: "24px" }}
     >
       {/* ── Summary Strip ───────────────────────────────────────────── */}
-      <div
+   <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "10px",
+    marginBottom: "20px",
+  }}
+>
+  {[
+    {
+      label: "6-Month Income",
+      value: formatCurrency(totalIncome, currency),
+      color: "#e8ff47",
+    },
+    {
+      label: "6-Month Expenses",
+      value: formatCurrency(totalExpense, currency),
+      color: "#4778ff",
+    },
+    {
+      label: "Avg Savings Rate",
+      value: `${savingsRate}%`,
+      color: "#47ffe8",
+    },
+  ].map((s) => (
+    <div
+      key={s.label}
+      style={{
+        borderRadius: "14px",
+        padding: "14px 12px",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border)",
+        minWidth: 0,
+      }}
+    >
+      <p
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px",
+          fontFamily: "var(--font-mono)",
+          fontSize: "9px",
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: "8px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
-        {[
-          {
-            label: "6-Month Income",
-            value: formatCurrency(totalIncome, currency),
-            color: "#e8ff47",
-          },
-          {
-            label: "6-Month Expenses",
-            value: formatCurrency(totalExpense, currency),
-            color: "#4778ff",
-          },
-          {
-            label: "Avg Savings Rate",
-            value: `${savingsRate}%`,
-            color: "#47ffe8",
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            style={{
-              borderRadius: "16px",
-              padding: "24px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "11px",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                marginBottom: "10px",
-              }}
-            >
-              {s.label}
-            </p>
-            <p
-              style={{
-                fontFamily: "(--font-display)",
-                fontSize: "28px",
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                color: s.color,
-              }}
-            >
-              {s.value}
-            </p>
-          </div>
-        ))}
-      </div>
+        {s.label}
+      </p>
+      <p
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "clamp(14px, 2.5vw, 22px)",
+          fontWeight: 800,
+          letterSpacing: "-0.03em",
+          color: s.color,
+          wordBreak: "break-word",
+          lineHeight: 1.1,
+        }}
+      >
+        {s.value}
+      </p>
+    </div>
+  ))}
+</div>
+        
 
       {/* ── Bar Chart ───────────────────────────────────────────────── */}
       <div
