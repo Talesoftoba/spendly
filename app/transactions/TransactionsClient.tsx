@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Search, Plus, Trash2, X, SlidersHorizontal } from "lucide-react";
+import { Search, Plus, Trash2, X, SlidersHorizontal, CreditCard } from "lucide-react";
 import { createTransaction, deleteTransaction } from "../lib/actions";
 import { formatCurrency, formatDate } from "../lib/utils";
 import { useCurrency } from "../components/layout/CurrencyProvider";
 import type { TransactionWithCategory, Category } from "@/types";
 import { categoryIcons, categoryColors } from "../lib/categoryConfig";
-import { CreditCard } from "lucide-react";
 
 type Props = {
   transactions: TransactionWithCategory[];
@@ -88,7 +87,7 @@ export function TransactionsClient({
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "var(--bg-elevated)",
+    background: "rgba(255,255,255,0.06)",
     border: "1px solid var(--border)",
     borderRadius: "10px",
     padding: "11px 14px",
@@ -114,7 +113,7 @@ export function TransactionsClient({
   return (
     <div className="animate-fade-up">
 
-      {/* ── Mobile Header ──────────────────────────────────────── */}
+      {/* ── Toolbar ───────────────────────────────────────────── */}
       <div
         style={{
           display: "flex",
@@ -123,8 +122,8 @@ export function TransactionsClient({
           marginBottom: "16px",
         }}
       >
-        {/* Search bar — takes most of the space */}
-        <div style={{ flex: 1, position: "relative" }}>
+        {/* Search */}
+        <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
           <Search
             size={14}
             style={{
@@ -153,7 +152,7 @@ export function TransactionsClient({
           />
         </div>
 
-        {/* Filter toggle button */}
+        {/* Filter toggle */}
         <button
           onClick={() => setShowFilters((o) => !o)}
           style={{
@@ -163,7 +162,9 @@ export function TransactionsClient({
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "10px",
-            border: `1px solid ${showFilters ? "rgba(232,255,71,0.5)" : "var(--border)"}`,
+            border: `1px solid ${
+              showFilters ? "rgba(232,255,71,0.5)" : "var(--border)"
+            }`,
             background: showFilters
               ? "rgba(232,255,71,0.1)"
               : "var(--bg-card)",
@@ -200,7 +201,7 @@ export function TransactionsClient({
         </button>
       </div>
 
-      {/* ── Filter Pills (collapsible) ─────────────────────────── */}
+      {/* ── Filter Pills ──────────────────────────────────────── */}
       {showFilters && (
         <div
           className="animate-fade-up"
@@ -218,10 +219,15 @@ export function TransactionsClient({
               style={{
                 padding: "7px 16px",
                 borderRadius: "20px",
-                border: `1px solid ${filter === f ? "rgba(232,255,71,0.4)" : "var(--border)"}`,
-                background: filter === f
-                  ? "rgba(232,255,71,0.12)"
-                  : "var(--bg-card)",
+                border: `1px solid ${
+                  filter === f
+                    ? "rgba(232,255,71,0.4)"
+                    : "var(--border)"
+                }`,
+                background:
+                  filter === f
+                    ? "rgba(232,255,71,0.12)"
+                    : "var(--bg-card)",
                 color: filter === f ? "#e8ff47" : "var(--text-muted)",
                 fontFamily: "var(--font-mono)",
                 fontSize: "12px",
@@ -234,7 +240,6 @@ export function TransactionsClient({
             </button>
           ))}
 
-          {/* Active filter indicator */}
           {filter !== "ALL" && (
             <button
               onClick={() => setFilter("ALL")}
@@ -258,7 +263,7 @@ export function TransactionsClient({
         </div>
       )}
 
-      {/* ── Transaction Count ──────────────────────────────────── */}
+      {/* ── Count ─────────────────────────────────────────────── */}
       <div
         style={{
           display: "flex",
@@ -274,7 +279,8 @@ export function TransactionsClient({
             color: "var(--text-muted)",
           }}
         >
-          {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+          {filtered.length} transaction
+          {filtered.length !== 1 ? "s" : ""}
           {search && ` matching "${search}"`}
         </p>
         {search && (
@@ -305,10 +311,7 @@ export function TransactionsClient({
       >
         {filtered.length === 0 ? (
           <div
-            style={{
-              padding: "48px 24px",
-              textAlign: "center",
-            }}
+            style={{ padding: "48px 24px", textAlign: "center" }}
           >
             <p
               style={{
@@ -322,7 +325,10 @@ export function TransactionsClient({
             </p>
             {(search || filter !== "ALL") && (
               <button
-                onClick={() => { setSearch(""); setFilter("ALL"); }}
+                onClick={() => {
+                  setSearch("");
+                  setFilter("ALL");
+                }}
                 style={{
                   fontFamily: "var(--font-mono)",
                   fontSize: "12px",
@@ -339,15 +345,19 @@ export function TransactionsClient({
         ) : (
           <div>
             {filtered.map((t, index) => {
-              const Icon = t.category?.name
-                ? categoryIcons[t.category.name] ?? CreditCard
-                : CreditCard;
-              const iconColor = t.category?.name
-                ? categoryColors[t.category.name] ?? "rgba(255,255,255,0.4)"
-                : "rgba(255,255,255,0.4)";
-              const bgColor = t.category?.name
-                ? categoryColors[t.category.name]
-                : null;
+              const Icon =
+                t.category?.name
+                  ? categoryIcons[t.category.name] ?? CreditCard
+                  : CreditCard;
+              const iconColor =
+                t.category?.name
+                  ? categoryColors[t.category.name] ??
+                    "rgba(255,255,255,0.4)"
+                  : "rgba(255,255,255,0.4)";
+              const bgColor =
+                t.category?.name
+                  ? categoryColors[t.category.name]
+                  : null;
 
               return (
                 <div
@@ -357,46 +367,58 @@ export function TransactionsClient({
                     alignItems: "center",
                     gap: "12px",
                     padding: "14px 16px",
-                    borderBottom: index < filtered.length - 1
-                      ? "1px solid var(--border)"
-                      : "none",
+                    borderBottom:
+                      index < filtered.length - 1
+                        ? "1px solid var(--border)"
+                        : "none",
                     transition: "background 0.15s",
-                    position: "relative",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "var(--bg-elevated)")
+                    (e.currentTarget.style.background =
+                      "rgba(255,255,255,0.03)")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "transparent")
                   }
                 >
-                  {/* Icon */}
+                  {/* ── Icon ─────────────────────────────────── */}
                   <span
                     style={{
                       width: "40px",
                       height: "40px",
+                      minWidth: "40px",
                       borderRadius: "12px",
                       background: bgColor
                         ? `${bgColor}18`
-                        : "var(--bg-elevated)",
+                        : "rgba(255,255,255,0.06)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
-                    <Icon size={16} color={iconColor} strokeWidth={2} />
+                    <Icon
+                      size={16}
+                      color={iconColor}
+                      strokeWidth={2}
+                    />
                   </span>
 
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* ── Title + meta ──────────────────────────── */}
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0, // ← critical — allows text to truncate
+                      overflow: "hidden",
+                    }}
+                  >
                     <p
                       style={{
                         fontFamily: "var(--font-display)",
                         fontSize: "14px",
                         fontWeight: 600,
                         color: "var(--text-primary)",
-                        marginBottom: "3px",
+                        marginBottom: "4px",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -409,7 +431,8 @@ export function TransactionsClient({
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
-                        flexWrap: "wrap",
+                        flexWrap: "nowrap",
+                        overflow: "hidden",
                       }}
                     >
                       {t.category && (
@@ -419,9 +442,11 @@ export function TransactionsClient({
                             fontSize: "10px",
                             padding: "2px 7px",
                             borderRadius: "4px",
-                            background: "var(--bg-elevated)",
+                            background: "rgba(255,255,255,0.06)",
                             color: "var(--text-muted)",
                             border: "1px solid var(--border)",
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
                           }}
                         >
                           {t.category.name}
@@ -432,6 +457,9 @@ export function TransactionsClient({
                           fontFamily: "var(--font-mono)",
                           fontSize: "10px",
                           color: "var(--text-muted)",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
                         }}
                       >
                         {formatDate(t.date)}
@@ -439,23 +467,26 @@ export function TransactionsClient({
                     </div>
                   </div>
 
-                  {/* Amount + delete */}
+                  {/* ── Amount + Delete ───────────────────────── */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
-                      flexShrink: 0,
+                      gap: "6px",
+                      flexShrink: 0, // ← never shrink — always visible
+                      marginLeft: "auto",
                     }}
                   >
                     <p
                       style={{
                         fontFamily: "var(--font-mono)",
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        color: t.type === "INCOME"
-                          ? "#47ffe8"
-                          : "var(--text-primary)",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color:
+                          t.type === "INCOME"
+                            ? "#47ffe8"
+                            : "var(--text-primary)",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {t.type === "INCOME" ? "+" : "-"}
@@ -469,7 +500,9 @@ export function TransactionsClient({
                         background: "none",
                         border: "none",
                         color: "var(--text-muted)",
-                        cursor: isPending ? "not-allowed" : "pointer",
+                        cursor: isPending
+                          ? "not-allowed"
+                          : "pointer",
                         padding: "6px",
                         borderRadius: "8px",
                         display: "flex",
@@ -477,6 +510,7 @@ export function TransactionsClient({
                         justifyContent: "center",
                         transition: "all 0.2s",
                         opacity: 0.4,
+                        flexShrink: 0,
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = "#ff6b47";
@@ -485,8 +519,10 @@ export function TransactionsClient({
                         e.currentTarget.style.opacity = "1";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = "var(--text-muted)";
-                        e.currentTarget.style.background = "transparent";
+                        e.currentTarget.style.color =
+                          "var(--text-muted)";
+                        e.currentTarget.style.background =
+                          "transparent";
                         e.currentTarget.style.opacity = "0.4";
                       }}
                     >
@@ -502,48 +538,48 @@ export function TransactionsClient({
 
       {/* ── Add Transaction Modal ──────────────────────────────── */}
       {showModal && (
-      <div
-  style={{
-    position: "fixed",
-    inset: 0,
-    zIndex: 50,
-    display: "flex",
-    alignItems: "flex-end",
-    justifyContent: "center",
-    background: "rgba(0,0,0,0.6)",
-    backdropFilter: "blur(8px)",
-    paddingTop: "56px", // ← height of the header so modal never goes behind it
-  }}
-  onClick={(e) => {
-    if (e.target === e.currentTarget) setShowModal(false);
-  }}
->
-       <div
-  className="animate-slide-up"
-  style={{
-    width: "100%",
-    maxWidth: "520px",
-    borderRadius: "20px 20px 0 0",
-    padding: "20px 24px 40px",
-    background: "var(--bg-card)",
-    border: "1px solid var(--border)",
-    borderBottom: "none",
-    maxHeight: "calc(100dvh - 56px)", // ← total screen minus header height
-    overflowY: "auto",
-  }}
->
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(8px)",
+            paddingTop: "56px",
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+        >
+          <div
+            className="animate-slide-up"
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              borderRadius: "20px 20px 0 0",
+              padding: "20px 24px 40px",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border)",
+              borderBottom: "none",
+              maxHeight: "calc(100dvh - 56px)",
+              overflowY: "auto",
+            }}
+          >
             {/* Handle bar */}
             <div
               style={{
                 width: "36px",
                 height: "4px",
                 borderRadius: "2px",
-                background: "var(--border-strong)",
+                background: "rgba(255,255,255,0.15)",
                 margin: "0 auto 20px",
               }}
             />
 
-            {/* Header */}
+            {/* Modal header */}
             <div
               style={{
                 display: "flex",
@@ -566,7 +602,7 @@ export function TransactionsClient({
               <button
                 onClick={() => setShowModal(false)}
                 style={{
-                  background: "var(--bg-elevated)",
+                  background: "rgba(255,255,255,0.06)",
                   border: "1px solid var(--border)",
                   borderRadius: "8px",
                   color: "var(--text-muted)",
@@ -593,17 +629,19 @@ export function TransactionsClient({
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: "8px",
+                  gap: "6px",
                   padding: "4px",
                   borderRadius: "12px",
-                  background: "var(--bg-elevated)",
+                  background: "rgba(255,255,255,0.04)",
                   border: "1px solid var(--border)",
                 }}
               >
                 {(["EXPENSE", "INCOME"] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => setForm((f) => ({ ...f, type: t }))}
+                    onClick={() =>
+                      setForm((f) => ({ ...f, type: t }))
+                    }
                     style={{
                       padding: "10px",
                       borderRadius: "9px",
@@ -613,17 +651,21 @@ export function TransactionsClient({
                       cursor: "pointer",
                       transition: "all 0.2s",
                       border: "none",
-                      background: form.type === t
-                        ? t === "INCOME"
-                          ? "rgba(71,255,232,0.15)"
-                          : "rgba(255,107,71,0.15)"
-                        : "transparent",
-                      color: form.type === t
-                        ? t === "INCOME" ? "#47ffe8" : "#ff6b47"
-                        : "var(--text-muted)",
+                      background:
+                        form.type === t
+                          ? t === "INCOME"
+                            ? "rgba(71,255,232,0.15)"
+                            : "rgba(255,107,71,0.15)"
+                          : "transparent",
+                      color:
+                        form.type === t
+                          ? t === "INCOME"
+                            ? "#47ffe8"
+                            : "#ff6b47"
+                          : "var(--text-muted)",
                     }}
                   >
-                    {t === "INCOME" ? " Income" : " Expense"}
+                    {t === "INCOME" ? "Income" : "Expense"}
                   </button>
                 ))}
               </div>
@@ -635,11 +677,15 @@ export function TransactionsClient({
                   placeholder="e.g. Grocery Store"
                   value={form.title}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, title: e.target.value }))
+                    setForm((f) => ({
+                      ...f,
+                      title: e.target.value,
+                    }))
                   }
                   style={inputStyle}
                   onFocus={(e) =>
-                    (e.target.style.borderColor = "rgba(232,255,71,0.5)")
+                    (e.target.style.borderColor =
+                      "rgba(232,255,71,0.5)")
                   }
                   onBlur={(e) =>
                     (e.target.style.borderColor = "var(--border)")
@@ -655,11 +701,15 @@ export function TransactionsClient({
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, amount: e.target.value }))
+                    setForm((f) => ({
+                      ...f,
+                      amount: e.target.value,
+                    }))
                   }
                   style={inputStyle}
                   onFocus={(e) =>
-                    (e.target.style.borderColor = "rgba(232,255,71,0.5)")
+                    (e.target.style.borderColor =
+                      "rgba(232,255,71,0.5)")
                   }
                   onBlur={(e) =>
                     (e.target.style.borderColor = "var(--border)")
@@ -701,11 +751,15 @@ export function TransactionsClient({
                     type="date"
                     value={form.date}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, date: e.target.value }))
+                      setForm((f) => ({
+                        ...f,
+                        date: e.target.value,
+                      }))
                     }
                     style={inputStyle}
                     onFocus={(e) =>
-                      (e.target.style.borderColor = "rgba(232,255,71,0.5)")
+                      (e.target.style.borderColor =
+                        "rgba(232,255,71,0.5)")
                     }
                     onBlur={(e) =>
                       (e.target.style.borderColor = "var(--border)")
@@ -721,11 +775,15 @@ export function TransactionsClient({
                   placeholder="Any additional details..."
                   value={form.note}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, note: e.target.value }))
+                    setForm((f) => ({
+                      ...f,
+                      note: e.target.value,
+                    }))
                   }
                   style={inputStyle}
                   onFocus={(e) =>
-                    (e.target.style.borderColor = "rgba(232,255,71,0.5)")
+                    (e.target.style.borderColor =
+                      "rgba(232,255,71,0.5)")
                   }
                   onBlur={(e) =>
                     (e.target.style.borderColor = "var(--border)")
