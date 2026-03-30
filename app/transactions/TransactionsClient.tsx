@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Search, Plus, Trash2, X, SlidersHorizontal, CreditCard } from "lucide-react";
 import { createTransaction, deleteTransaction } from "../lib/actions";
@@ -26,6 +27,7 @@ export function TransactionsClient({
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isPending, startTransition] = useTransition();
+   const router = useRouter(); // 👈 ADD THIS
 
   const [form, setForm] = useState({
     title: "",
@@ -74,7 +76,7 @@ export function TransactionsClient({
         note: "",
       });
 
-      window.location.reload();
+     router.refresh();
     });
   };
 

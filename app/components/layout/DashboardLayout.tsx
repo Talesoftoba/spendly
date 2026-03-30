@@ -133,7 +133,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   lineHeight: 1,
                 }}
               >
-                Spendly
+                Spendllly
               </p>
               <p
                 style={{
