@@ -76,19 +76,22 @@ export async function createTransaction(data: unknown) {
   const parsed = TransactionSchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-await prisma.transaction.create({
-  data: {
-    ...parsed.data,
-    date: new Date(parsed.data.date),
-    // Convert empty string to null — null means no category
-    categoryId: parsed.data.categoryId || null,
-    userId,
-  },
-});
+  // ✅ Return the full transaction with category included
+  const transaction = await prisma.transaction.create({
+    data: {
+      ...parsed.data,
+      date: new Date(parsed.data.date),
+      categoryId: parsed.data.categoryId || null,
+      userId,
+    },
+    include: {
+      category: true, // ✅ needed so categoryIcons/colors work in the UI
+    },
+  });
 
   revalidatePath("/dashboard");
   revalidatePath("/transactions");
-  return { success: true };
+  return transaction; // ✅ return transaction, not { success: true }
 }
 
 export async function updateTransaction(id: string, data: unknown) {
@@ -179,9 +182,7 @@ export async function deleteBudget(id: string) {
 
 // ─── Update Profile ────────────────────────────────────────────────────────────
 
-
-
-  export async function updateProfile(data: unknown) {
+export async function updateProfile(data: unknown) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -228,7 +229,6 @@ export async function createCategory(data: unknown) {
   const parsed = CategorySchema.safeParse(data);
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  // Check if category with same name already exists for this user
   const existing = await prisma.category.findUnique({
     where: {
       userId_name: {
@@ -245,7 +245,7 @@ export async function createCategory(data: unknown) {
       userId,
       name: parsed.data.name,
       color: parsed.data.color,
-      icon: "📦", // default icon — we'll handle display with letter avatar
+      icon: "📦",
     },
   });
 
@@ -263,12 +263,10 @@ export async function deleteCategory(id: string) {
   });
   if (!existing) return { error: "Category not found" };
 
-  // Check if category has transactions attached
   const transactionCount = await prisma.transaction.count({
     where: { categoryId: id },
   });
 
-  // Check if category has budgets attached
   const budgetCount = await prisma.budget.count({
     where: { categoryId: id },
   });

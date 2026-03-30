@@ -1,8 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Search, Plus, Trash2, X, SlidersHorizontal, CreditCard } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import {
+  Search,
+  Plus,
+  Trash2,
+  X,
+  SlidersHorizontal,
+  CreditCard,
+  ArrowUpCircle,
+  ArrowDownCircle,
+} from "lucide-react";
 import { createTransaction, deleteTransaction } from "../lib/actions";
 import { formatCurrency, formatDate } from "../lib/utils";
 import { useCurrency } from "../components/layout/CurrencyProvider";
@@ -27,7 +36,7 @@ export function TransactionsClient({
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isPending, startTransition] = useTransition();
-   const router = useRouter(); // 👈 ADD THIS
+  const router = useRouter();
 
   const [form, setForm] = useState({
     title: "",
@@ -39,10 +48,20 @@ export function TransactionsClient({
   });
   const [formError, setFormError] = useState("");
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal]);
+
   const filtered = transactions.filter((t) => {
-    const matchSearch = t.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "ALL" || t.type === filter;
     return matchSearch && matchFilter;
   });
@@ -66,6 +85,7 @@ export function TransactionsClient({
         return;
       }
 
+      setTransactions((prev) => [result as TransactionWithCategory, ...prev]);
       setShowModal(false);
       setForm({
         title: "",
@@ -76,7 +96,7 @@ export function TransactionsClient({
         note: "",
       });
 
-     router.refresh();
+      router.refresh();
     });
   };
 
@@ -87,19 +107,19 @@ export function TransactionsClient({
     });
   };
 
-  const inputStyle: React.CSSProperties = {
+  const fieldStyle: React.CSSProperties = {
     width: "100%",
-    background: "rgba(255,255,255,0.06)",
+    background: "rgba(255,255,255,0.05)",
     border: "1px solid var(--border)",
     borderRadius: "10px",
-    padding: "11px 14px",
+    padding: "12px 14px",
     color: "var(--text-primary)",
-    caretColor: "var(--text-primary)",
-    WebkitTextFillColor: "var(--text-primary)",
     fontFamily: "var(--font-mono)",
-    fontSize: "13px",
+    fontSize: "14px",
     outline: "none",
-    transition: "border-color 0.2s",
+    boxSizing: "border-box",
+    display: "block",
+    WebkitAppearance: "none",
   };
 
   const labelStyle: React.CSSProperties = {
@@ -113,560 +133,282 @@ export function TransactionsClient({
   };
 
   return (
-    <div className="animate-fade-up">
+    <>
+      <div className="animate-fade-up">
 
-      {/* ── Toolbar ───────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          marginBottom: "16px",
-        }}
-      >
-        {/* Search */}
-        <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-          <Search
-            size={14}
-            style={{
-              position: "absolute",
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "var(--text-muted)",
-              pointerEvents: "none",
-            }}
-          />
-          <input
-            placeholder="Search transactions..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              ...inputStyle,
-              paddingLeft: "36px",
-            }}
-            onFocus={(e) =>
-              (e.target.style.borderColor = "rgba(232,255,71,0.5)")
-            }
-            onBlur={(e) =>
-              (e.target.style.borderColor = "var(--border)")
-            }
-          />
-        </div>
-
-        {/* Filter toggle */}
-        <button
-          onClick={() => setShowFilters((o) => !o)}
-          style={{
-            width: "42px",
-            height: "42px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "10px",
-            border: `1px solid ${
-              showFilters ? "rgba(232,255,71,0.5)" : "var(--border)"
-            }`,
-            background: showFilters
-              ? "rgba(232,255,71,0.1)"
-              : "var(--bg-card)",
-            color: showFilters ? "#e8ff47" : "var(--text-muted)",
-            cursor: "pointer",
-            flexShrink: 0,
-            transition: "all 0.2s",
-          }}
-        >
-          <SlidersHorizontal size={15} />
-        </button>
-
-        {/* Add button */}
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            width: "42px",
-            height: "42px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "10px",
-            border: "none",
-            background: "#e8ff47",
-            color: "#080808",
-            cursor: "pointer",
-            flexShrink: 0,
-            transition: "opacity 0.2s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          <Plus size={17} />
-        </button>
-      </div>
-
-      {/* ── Filter Pills ──────────────────────────────────────── */}
-      {showFilters && (
-        <div
-          className="animate-fade-up"
-          style={{
-            display: "flex",
-            gap: "8px",
-            marginBottom: "14px",
-            flexWrap: "wrap",
-          }}
-        >
-          {(["ALL", "INCOME", "EXPENSE"] as FilterType[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
+        {/* ── Toolbar ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+          <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+            <Search
+              size={14}
               style={{
-                padding: "7px 16px",
-                borderRadius: "20px",
-                border: `1px solid ${
-                  filter === f
-                    ? "rgba(232,255,71,0.4)"
-                    : "var(--border)"
-                }`,
-                background:
-                  filter === f
-                    ? "rgba(232,255,71,0.12)"
-                    : "var(--bg-card)",
-                color: filter === f ? "#e8ff47" : "var(--text-muted)",
-                fontFamily: "var(--font-mono)",
-                fontSize: "12px",
-                fontWeight: filter === f ? 600 : 400,
-                cursor: "pointer",
-                transition: "all 0.2s",
+                position: "absolute", left: "12px", top: "50%",
+                transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none",
               }}
-            >
-              {f}
-            </button>
-          ))}
+            />
+            <input
+              placeholder="Search transactions..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ ...fieldStyle, paddingLeft: "36px" }}
+            />
+          </div>
 
-          {filter !== "ALL" && (
-            <button
-              onClick={() => setFilter("ALL")}
-              style={{
-                padding: "7px 12px",
-                borderRadius: "20px",
-                border: "1px solid rgba(255,107,71,0.3)",
-                background: "rgba(255,107,71,0.1)",
-                color: "#ff6b47",
-                fontFamily: "var(--font-mono)",
-                fontSize: "12px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <X size={11} /> Clear
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Count ─────────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
-          {filtered.length} transaction
-          {filtered.length !== 1 ? "s" : ""}
-          {search && ` matching "${search}"`}
-        </p>
-        {search && (
           <button
-            onClick={() => setSearch("")}
+            onClick={() => setShowFilters((o) => !o)}
             style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "11px",
-              color: "#e8ff47",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
+              width: "42px", height: "42px", display: "flex", alignItems: "center",
+              justifyContent: "center", borderRadius: "10px", flexShrink: 0,
+              border: `1px solid ${showFilters ? "rgba(232,255,71,0.5)" : "var(--border)"}`,
+              background: showFilters ? "rgba(232,255,71,0.1)" : "var(--bg-card)",
+              color: showFilters ? "#e8ff47" : "var(--text-muted)", cursor: "pointer",
             }}
           >
-            Clear search
+            <SlidersHorizontal size={15} />
           </button>
-        )}
-      </div>
 
-      {/* ── Transaction List ───────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: "16px",
-          overflow: "hidden",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        {filtered.length === 0 ? (
-          <div
-            style={{ padding: "48px 24px", textAlign: "center" }}
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              width: "42px", height: "42px", display: "flex", alignItems: "center",
+              justifyContent: "center", borderRadius: "10px", border: "none",
+              background: "#e8ff47", color: "#080808", cursor: "pointer", flexShrink: 0,
+            }}
           >
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "13px",
-                color: "var(--text-muted)",
-                marginBottom: "6px",
-              }}
-            >
-              No transactions found
-            </p>
-            {(search || filter !== "ALL") && (
+            <Plus size={17} />
+          </button>
+        </div>
+
+        {/* ── Filter Pills ── */}
+        {showFilters && (
+          <div style={{ display: "flex", gap: "8px", marginBottom: "14px", flexWrap: "wrap" }}>
+            {(["ALL", "INCOME", "EXPENSE"] as FilterType[]).map((f) => (
               <button
-                onClick={() => {
-                  setSearch("");
-                  setFilter("ALL");
-                }}
+                key={f}
+                onClick={() => setFilter(f)}
                 style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "12px",
-                  color: "#e8ff47",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
+                  padding: "7px 16px", borderRadius: "20px", cursor: "pointer",
+                  border: `1px solid ${filter === f ? "rgba(232,255,71,0.4)" : "var(--border)"}`,
+                  background: filter === f ? "rgba(232,255,71,0.12)" : "var(--bg-card)",
+                  color: filter === f ? "#e8ff47" : "var(--text-muted)",
+                  fontFamily: "var(--font-mono)", fontSize: "12px",
+                  fontWeight: filter === f ? 600 : 400,
                 }}
               >
-                Clear filters
+                {f}
+              </button>
+            ))}
+            {filter !== "ALL" && (
+              <button
+                onClick={() => setFilter("ALL")}
+                style={{
+                  padding: "7px 12px", borderRadius: "20px", cursor: "pointer",
+                  border: "1px solid rgba(255,107,71,0.3)", background: "rgba(255,107,71,0.1)",
+                  color: "#ff6b47", fontFamily: "var(--font-mono)", fontSize: "12px",
+                  display: "flex", alignItems: "center", gap: "4px",
+                }}
+              >
+                <X size={11} /> Clear
               </button>
             )}
           </div>
-        ) : (
-          <div>
-            {filtered.map((t, index) => {
-              const Icon =
-                t.category?.name
-                  ? categoryIcons[t.category.name] ?? CreditCard
-                  : CreditCard;
-              const iconColor =
-                t.category?.name
-                  ? categoryColors[t.category.name] ??
-                    "rgba(255,255,255,0.4)"
-                  : "rgba(255,255,255,0.4)";
-              const bgColor =
-                t.category?.name
-                  ? categoryColors[t.category.name]
-                  : null;
+        )}
 
-              return (
-                <div
-                  key={t.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "14px 16px",
-                    borderBottom:
-                      index < filtered.length - 1
-                        ? "1px solid var(--border)"
-                        : "none",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(255,255,255,0.03)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
+        {/* ── Count ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
+            {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+            {search && ` matching "${search}"`}
+          </p>
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "#e8ff47", background: "none", border: "none", cursor: "pointer" }}
+            >
+              Clear search
+            </button>
+          )}
+        </div>
+
+        {/* ── Transaction List ── */}
+        <div style={{ borderRadius: "16px", overflow: "hidden", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: "48px 24px", textAlign: "center" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "var(--text-muted)", marginBottom: "6px" }}>
+                No transactions found
+              </p>
+              {(search || filter !== "ALL") && (
+                <button
+                  onClick={() => { setSearch(""); setFilter("ALL"); }}
+                  style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#e8ff47", background: "none", border: "none", cursor: "pointer" }}
                 >
-                  {/* ── Icon ─────────────────────────────────── */}
-                  <span
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      minWidth: "40px",
-                      borderRadius: "12px",
-                      background: bgColor
-                        ? `${bgColor}18`
-                        : "rgba(255,255,255,0.06)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon
-                      size={16}
-                      color={iconColor}
-                      strokeWidth={2}
-                    />
-                  </span>
+                  Clear filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div>
+              {filtered.map((t, index) => {
+                const Icon = t.category?.name ? categoryIcons[t.category.name] ?? CreditCard : CreditCard;
+                const iconColor = t.category?.name ? categoryColors[t.category.name] ?? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.4)";
+                const bgColor = t.category?.name ? categoryColors[t.category.name] : null;
 
-                  {/* ── Title + meta ──────────────────────────── */}
+                return (
                   <div
+                    key={t.id}
                     style={{
-                      flex: 1,
-                      minWidth: 0, // ← critical — allows text to truncate
-                      overflow: "hidden",
+                      display: "flex", alignItems: "center", gap: "12px",
+                      padding: "14px 16px",
+                      borderBottom: index < filtered.length - 1 ? "1px solid var(--border)" : "none",
                     }}
                   >
-                    <p
+                    <span
                       style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        color: "var(--text-primary)",
-                        marginBottom: "4px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        width: "40px", height: "40px", minWidth: "40px", borderRadius: "12px",
+                        background: bgColor ? `${bgColor}18` : "rgba(255,255,255,0.06)",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}
                     >
-                      {t.title}
-                    </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        flexWrap: "nowrap",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {t.category && (
-                        <span
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "10px",
-                            padding: "2px 7px",
-                            borderRadius: "4px",
-                            background: "rgba(255,255,255,0.06)",
-                            color: "var(--text-muted)",
-                            border: "1px solid var(--border)",
-                            whiteSpace: "nowrap",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {t.category.name}
+                      <Icon size={16} color={iconColor} strokeWidth={2} />
+                    </span>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {t.title}
+                      </p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        {t.category && (
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", border: "1px solid var(--border)", whiteSpace: "nowrap" }}>
+                            {t.category.name}
+                          </span>
+                        )}
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
+                          {formatDate(t.date)}
                         </span>
-                      )}
-                      <span
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: "10px",
-                          color: "var(--text-muted)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", fontWeight: 700, color: t.type === "INCOME" ? "#47ffe8" : "var(--text-primary)", whiteSpace: "nowrap" }}>
+                        {t.type === "INCOME" ? "+" : "-"}{formatCurrency(t.amount, currency)}
+                      </p>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        disabled={isPending}
+                        style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: isPending ? "not-allowed" : "pointer", padding: "6px", borderRadius: "8px", display: "flex", alignItems: "center", opacity: 0.4 }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = "#ff6b47"; e.currentTarget.style.background = "rgba(255,107,71,0.1)"; e.currentTarget.style.opacity = "1"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.opacity = "0.4"; }}
                       >
-                        {formatDate(t.date)}
-                      </span>
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </div>
-
-                  {/* ── Amount + Delete ───────────────────────── */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      flexShrink: 0, // ← never shrink — always visible
-                      marginLeft: "auto",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        color:
-                          t.type === "INCOME"
-                            ? "#47ffe8"
-                            : "var(--text-primary)",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t.type === "INCOME" ? "+" : "-"}
-                      {formatCurrency(t.amount, currency)}
-                    </p>
-
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      disabled={isPending}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--text-muted)",
-                        cursor: isPending
-                          ? "not-allowed"
-                          : "pointer",
-                        padding: "6px",
-                        borderRadius: "8px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "all 0.2s",
-                        opacity: 0.4,
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "#ff6b47";
-                        e.currentTarget.style.background =
-                          "rgba(255,107,71,0.1)";
-                        e.currentTarget.style.opacity = "1";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color =
-                          "var(--text-muted)";
-                        e.currentTarget.style.background =
-                          "transparent";
-                        e.currentTarget.style.opacity = "0.4";
-                      }}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── Add Transaction Modal ──────────────────────────────── */}
+      {/* ── Centered Modal ── */}
       {showModal && (
         <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
           style={{
             position: "fixed",
-            inset: 0,
-            zIndex: 50,
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
             display: "flex",
-            alignItems: "flex-end",
+            alignItems: "center",
             justifyContent: "center",
-            background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(8px)",
-            paddingTop: "56px",
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
+            padding: "16px",
+            boxSizing: "border-box",
           }}
         >
           <div
-            className="animate-slide-up"
             style={{
               width: "100%",
-              maxWidth: "520px",
-              borderRadius: "20px 20px 0 0",
-              padding: "20px 24px 40px",
+              maxWidth: "460px",
               background: "var(--bg-card)",
               border: "1px solid var(--border)",
-              borderBottom: "none",
-              maxHeight: "calc(100dvh - 56px)",
+              borderRadius: "20px",
+              maxHeight: "calc(100vh - 32px)",
               overflowY: "auto",
+              overflowX: "hidden",
             }}
           >
-            {/* Handle bar */}
-            <div
-              style={{
-                width: "36px",
-                height: "4px",
-                borderRadius: "2px",
-                background: "rgba(255,255,255,0.15)",
-                margin: "0 auto 20px",
-              }}
-            />
-
-            {/* Modal header */}
+            {/* Sticky header */}
             <div
               style={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: "24px",
+                padding: "18px 20px",
+                borderBottom: "1px solid var(--border)",
+                position: "sticky",
+                top: 0,
+                background: "var(--bg-card)",
+                zIndex: 2,
+                borderRadius: "20px 20px 0 0",
               }}
             >
-              <h2
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontSize: "20px",
-                  fontWeight: 800,
-                  color: "var(--text-primary)",
-                  letterSpacing: "-0.03em",
-                }}
-              >
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "17px", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", margin: 0 }}>
                 Add Transaction
               </h2>
               <button
                 onClick={() => setShowModal(false)}
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--text-muted)",
-                  cursor: "pointer",
-                  padding: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)",
+                  borderRadius: "8px", color: "var(--text-muted)", cursor: "pointer",
+                  padding: "6px", display: "flex", alignItems: "center", justifyContent: "center",
                 }}
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-              }}
-            >
+            {/* Form */}
+            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+
               {/* Type toggle */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "6px",
-                  padding: "4px",
-                  borderRadius: "12px",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid var(--border)",
-                }}
-              >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                 {(["EXPENSE", "INCOME"] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() =>
-                      setForm((f) => ({ ...f, type: t }))
-                    }
+                    onClick={() => setForm((f) => ({ ...f, type: t }))}
                     style={{
-                      padding: "10px",
-                      borderRadius: "9px",
+                      padding: "11px",
+                      borderRadius: "10px",
                       fontFamily: "var(--font-display)",
                       fontWeight: 700,
                       fontSize: "13px",
                       cursor: "pointer",
-                      transition: "all 0.2s",
-                      border: "none",
+                      border: `1px solid ${
+                        form.type === t
+                          ? t === "INCOME" ? "rgba(71,255,232,0.4)" : "rgba(255,107,71,0.4)"
+                          : "var(--border)"
+                      }`,
                       background:
                         form.type === t
-                          ? t === "INCOME"
-                            ? "rgba(71,255,232,0.15)"
-                            : "rgba(255,107,71,0.15)"
-                          : "transparent",
+                          ? t === "INCOME" ? "rgba(71,255,232,0.1)" : "rgba(255,107,71,0.1)"
+                          : "rgba(255,255,255,0.03)",
                       color:
                         form.type === t
-                          ? t === "INCOME"
-                            ? "#47ffe8"
-                            : "#ff6b47"
+                          ? t === "INCOME" ? "#47ffe8" : "#ff6b47"
                           : "var(--text-muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
                     }}
                   >
+                    {t === "INCOME" ? <ArrowUpCircle size={14} /> : <ArrowDownCircle size={14} />}
                     {t === "INCOME" ? "Income" : "Expense"}
                   </button>
                 ))}
@@ -678,20 +420,8 @@ export function TransactionsClient({
                 <input
                   placeholder="e.g. Grocery Store"
                   value={form.title}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      title: e.target.value,
-                    }))
-                  }
-                  style={inputStyle}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor =
-                      "rgba(232,255,71,0.5)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "var(--border)")
-                  }
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  style={fieldStyle}
                 />
               </div>
 
@@ -700,50 +430,26 @@ export function TransactionsClient({
                 <label style={labelStyle}>Amount</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   placeholder="0.00"
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      amount: e.target.value,
-                    }))
-                  }
-                  style={inputStyle}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor =
-                      "rgba(232,255,71,0.5)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "var(--border)")
-                  }
+                  onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                  style={fieldStyle}
                 />
               </div>
 
               {/* Category + Date */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
                   <label style={labelStyle}>Category</label>
                   <select
                     value={form.categoryId}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        categoryId: e.target.value,
-                      }))
-                    }
-                    style={{ ...inputStyle, cursor: "pointer" }}
+                    onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                    style={{ ...fieldStyle, cursor: "pointer" }}
                   >
                     <option value="">None</option>
                     {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
                 </div>
@@ -752,20 +458,8 @@ export function TransactionsClient({
                   <input
                     type="date"
                     value={form.date}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        date: e.target.value,
-                      }))
-                    }
-                    style={inputStyle}
-                    onFocus={(e) =>
-                      (e.target.style.borderColor =
-                        "rgba(232,255,71,0.5)")
-                    }
-                    onBlur={(e) =>
-                      (e.target.style.borderColor = "var(--border)")
-                    }
+                    onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                    style={fieldStyle}
                   />
                 </div>
               </div>
@@ -776,36 +470,14 @@ export function TransactionsClient({
                 <input
                   placeholder="Any additional details..."
                   value={form.note}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      note: e.target.value,
-                    }))
-                  }
-                  style={inputStyle}
-                  onFocus={(e) =>
-                    (e.target.style.borderColor =
-                      "rgba(232,255,71,0.5)")
-                  }
-                  onBlur={(e) =>
-                    (e.target.style.borderColor = "var(--border)")
-                  }
+                  onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                  style={fieldStyle}
                 />
               </div>
 
               {/* Error */}
               {formError && (
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "12px",
-                    color: "#ff6b47",
-                    padding: "10px 14px",
-                    borderRadius: "8px",
-                    background: "rgba(255,107,71,0.08)",
-                    border: "1px solid rgba(255,107,71,0.2)",
-                  }}
-                >
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "#ff6b47", padding: "10px 14px", borderRadius: "8px", background: "rgba(255,107,71,0.08)", border: "1px solid rgba(255,107,71,0.2)", margin: 0 }}>
                   {formError}
                 </p>
               )}
@@ -826,8 +498,9 @@ export function TransactionsClient({
                   fontSize: "15px",
                   cursor: isPending ? "not-allowed" : "pointer",
                   opacity: isPending ? 0.6 : 1,
-                  transition: "opacity 0.2s",
                   letterSpacing: "-0.02em",
+                  boxSizing: "border-box",
+                  marginTop: "4px",
                 }}
               >
                 {isPending ? "Adding..." : "Add Transaction"}
@@ -836,6 +509,6 @@ export function TransactionsClient({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
