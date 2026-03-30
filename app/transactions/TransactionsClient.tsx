@@ -623,7 +623,7 @@ export function TransactionsClient({
                         : "var(--text-muted)",
                     }}
                   >
-                    {t === "INCOME" ? "💚 Income" : "🔴 Expense"}
+                    {t === "INCOME" ? " Income" : " Expense"}
                   </button>
                 ))}
               </div>
