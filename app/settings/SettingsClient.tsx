@@ -8,6 +8,7 @@ import { updateProfile, createCategory, deleteCategory } from "../lib/actions";
 import { CategoryIcon } from "../components/ui/CategoryIcon";
 import { Plus, X, Trash2 } from "lucide-react";
 import type { Category } from "@/types";
+import Image from "next/image";
 
 type Props = {
   categories: Category[];
@@ -33,6 +34,11 @@ export function SettingsClient({ categories: initialCategories }: Props) {
   const [saveError, setSaveError] = useState("");
   const [mounted, setMounted]     = useState(false);
   const mountedRef                = useRef(false);
+
+  // ── Avatar state ───────────────────────────────────────────────
+  const [avatarUrl, setAvatarUrl]     = useState(session?.user?.avatarUrl ?? "");
+  const [uploading, setUploading]     = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   // ── Category state ─────────────────────────────────────────────
   const [categories, setCategories]     = useState(initialCategories);
@@ -76,6 +82,36 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     } catch {
       setSaveError("Something went wrong. Please try again.");
       setSaving(false);
+    }
+  };
+
+  // ── Upload avatar ──────────────────────────────────────────────
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch("/api/upload-avatar", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setUploadError(data.error ?? "Upload failed");
+        setUploading(false);
+        return;
+      }
+
+      setAvatarUrl(data.avatarUrl);
+      await update({ avatarUrl: data.avatarUrl });
+      setUploading(false);
+    } catch {
+      setUploadError("Something went wrong");
+      setUploading(false);
     }
   };
 
@@ -170,7 +206,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
   };
 
   const sectionTitleStyle: React.CSSProperties = {
-    fontFamily: "(--font-display)",
+    fontFamily: "var(--font-display)",
     fontSize: "16px",
     fontWeight: 800,
     color: "var(--text-primary)",
@@ -178,6 +214,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     marginBottom: "24px",
   };
 
+  const imageSrc = avatarUrl ?? session?.user?.avatarUrl ?? null;
   return (
     <div className="animate-fade-up" style={{ maxWidth: "560px" }}>
 
@@ -186,26 +223,165 @@ export function SettingsClient({ categories: initialCategories }: Props) {
         <p style={sectionTitleStyle}>Profile</p>
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-          {/* Avatar row */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "8px" }}>
-            <div
-              style={{
-                width: "56px", height: "56px", borderRadius: "50%",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "(--font-display)", fontWeight: 800, fontSize: "22px",
-                color: "#080808", flexShrink: 0,
-              }}
-            >
-              {name?.[0]?.toUpperCase() ?? session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+          {/* Avatar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              marginBottom: "8px",
+            }}
+          >
+            {/* Avatar image or initial */}
+        {/* Avatar image or initial */}
+<div style={{ position: "relative", flexShrink: 0 }}>
+  {imageSrc ? (
+    <Image
+      src={imageSrc}
+      alt="Avatar"
+      width={64}
+      height={64}
+      style={{
+        borderRadius: "50%",
+        objectFit: "cover",
+        border: "2px solid var(--border)",
+      }}
+    />
+              ) : (
+                <div
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 800,
+                    fontSize: "24px",
+                    color: "#080808",
+                  }}
+                >
+                  {name?.[0]?.toUpperCase() ??
+                    session?.user?.name?.[0]?.toUpperCase() ??
+                    "U"}
+                </div>
+              )}
+
+              {/* Upload overlay button */}
+              <label
+                htmlFor="avatar-upload"
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "50%",
+                  background: "#e8ff47",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: uploading ? "not-allowed" : "pointer",
+                  border: "2px solid var(--bg-card)",
+                  transition: "opacity 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              >
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#080808"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              </label>
+
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                disabled={uploading}
+                onChange={handleAvatarUpload}
+                style={{ display: "none" }}
+              />
             </div>
-            <div>
-              <p style={{ fontFamily: "(--font-display)", fontWeight: 700, fontSize: "15px", color: "var(--text-primary)", marginBottom: "2px" }}>
+
+            {/* Name and email */}
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  color: "var(--text-primary)",
+                  marginBottom: "2px",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {name || session?.user?.name || "User"}
               </p>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)" }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "12px",
+                  color: "var(--text-muted)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {session?.user?.email ?? ""}
               </p>
+
+              {/* Upload status */}
+              {uploading && (
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    color: "#47ffe8",
+                    marginTop: "4px",
+                  }}
+                >
+                  Uploading...
+                </p>
+              )}
+              {uploadError && (
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    color: "#ff6b47",
+                    marginTop: "4px",
+                  }}
+                >
+                  {uploadError}
+                </p>
+              )}
+              {!uploading && !uploadError && (
+                <p
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    color: "var(--text-muted)",
+                    marginTop: "4px",
+                  }}
+                >
+                  Click the icon to change photo
+                </p>
+              )}
             </div>
           </div>
 
@@ -267,7 +443,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
             style={{
               alignSelf: "flex-start", padding: "10px 24px", borderRadius: "10px",
               border: "none", background: saved ? "rgba(71,255,232,0.15)" : "#e8ff47",
-              color: saved ? "#47ffe8" : "#080808", fontFamily: "(--font-display)",
+              color: saved ? "#47ffe8" : "#080808", fontFamily: "var(--font-display)",
               fontWeight: 700, fontSize: "13px", cursor: saving ? "not-allowed" : "pointer",
               opacity: saving ? 0.6 : 1, transition: "all 0.3s", marginTop: "4px",
             }}
@@ -286,7 +462,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
             style={{
               display: "flex", alignItems: "center", gap: "6px",
               padding: "8px 16px", borderRadius: "10px", border: "none",
-              background: "#e8ff47", color: "#080808", fontFamily: "(--font-display)",
+              background: "#e8ff47", color: "#080808", fontFamily: "var(--font-display)",
               fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "opacity 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
@@ -321,7 +497,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 {/* Name */}
                 <p
                   style={{
-                    flex: 1, fontFamily: "(--font-display)", fontSize: "14px",
+                    flex: 1, fontFamily: "var(--font-display)", fontSize: "14px",
                     fontWeight: 600, color: "var(--text-primary)",
                   }}
                 >
@@ -416,7 +592,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = "var(--border)"; }}
               >
                 <div>
-                  <p style={{ fontFamily: "(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>
+                  <p style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>
                     {t.label}
                   </p>
                   <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
@@ -447,7 +623,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "var(--border)"; }}
         >
           <div>
-            <p style={{ fontFamily: "(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>Sign Out</p>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px" }}>Sign Out</p>
             <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>Sign out of your Spendly account</p>
           </div>
           <span style={{ color: "var(--text-muted)", fontSize: "18px" }}>→</span>
@@ -456,7 +632,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
 
       {/* ── Danger Zone ────────────────────────────────────────── */}
       <div style={{ ...sectionStyle, border: "1px solid rgba(255,107,71,0.2)" }}>
-        <p style={{ fontFamily: "(--font-display)", fontSize: "16px", fontWeight: 800, color: "#ff6b47", letterSpacing: "-0.02em", marginBottom: "8px" }}>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: 800, color: "#ff6b47", letterSpacing: "-0.02em", marginBottom: "8px" }}>
           Danger Zone
         </p>
         <p style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)", marginBottom: "20px" }}>
@@ -466,7 +642,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
           style={{
             padding: "10px 20px", borderRadius: "10px",
             border: "1px solid rgba(255,107,71,0.3)", background: "rgba(255,107,71,0.1)",
-            color: "#ff6b47", fontFamily: "(--font-display)", fontWeight: 700,
+            color: "#ff6b47", fontFamily: "var(--font-display)", fontWeight: 700,
             fontSize: "13px", cursor: "pointer", transition: "all 0.2s",
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,107,71,0.2)"; e.currentTarget.style.borderColor = "rgba(255,107,71,0.5)"; }}
@@ -494,7 +670,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
           >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontFamily: "(--font-display)", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em" }}>
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em" }}>
                 New Category
               </h2>
               <button
@@ -522,7 +698,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   size="lg"
                 />
                 <div>
-                  <p style={{ fontFamily: "(--font-display)", fontWeight: 700, fontSize: "15px", color: "#fff", marginBottom: "2px" }}>
+                  <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "15px", color: "#fff", marginBottom: "2px" }}>
                     {catName || "Category Name"}
                   </p>
                   <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
@@ -590,7 +766,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 style={{
                   width: "100%", padding: "13px", borderRadius: "12px",
                   border: "none", background: "#e8ff47", color: "#080808",
-                  fontFamily: "(--font-display)", fontWeight: 700, fontSize: "14px",
+                  fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "14px",
                   cursor: isPending ? "not-allowed" : "pointer",
                   opacity: isPending ? 0.6 : 1, transition: "opacity 0.2s",
                 }}

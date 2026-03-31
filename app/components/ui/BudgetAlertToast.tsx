@@ -48,7 +48,7 @@ export function BudgetAlertToast({ alert, onDismiss }: Props) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
           style={{
-            fontFamily: "(--font-display)",
+            fontFamily: "var(--font-display)",
             fontWeight: 700,
             fontSize: "13px",
             color: "#ff6b47",

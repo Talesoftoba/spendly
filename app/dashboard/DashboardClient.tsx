@@ -262,7 +262,7 @@ export function DashboardClient({
               </p>
               <p
                 style={{
-                  fontFamily: "(--font-display)",
+                  fontFamily: "var(--font-display)",
                   fontSize: "20px",
                   fontWeight: 800,
                   color: "#fff",
@@ -383,7 +383,7 @@ export function DashboardClient({
           </p>
           <p
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -504,7 +504,7 @@ export function DashboardClient({
           >
             <p
               style={{
-                fontFamily: "(--font-display)",
+                fontFamily: "var(--font-display)",
                 fontSize: "15px",
                 fontWeight: 700,
                 color: "#fff",
@@ -574,7 +574,7 @@ export function DashboardClient({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p
                     style={{
-                      fontFamily: "(--font-display)",
+                      fontFamily: "var(--font-display)",
                       fontSize: "13px",
                       fontWeight: 600,
                       color: "#fff",
@@ -632,7 +632,7 @@ export function DashboardClient({
           >
             <p
               style={{
-                fontFamily: "(--font-display)",
+                fontFamily: "var(--font-display)",
                 fontSize: "15px",
                 fontWeight: 700,
                 color: "#fff",
@@ -699,7 +699,7 @@ export function DashboardClient({
 />
   <span
     style={{
-      fontFamily: "(--font-display)",
+      fontFamily: "var(--font-display)",
       fontSize: "13px",
       fontWeight: 600,
       color: "var(--text-primary)",

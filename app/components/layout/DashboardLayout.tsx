@@ -16,6 +16,7 @@ import {
   Bell,
 } from "lucide-react";
 import { BudgetAlertToast } from "../ui/BudgetAlertToast";
+import Image from "next/image";
 
 const navItems = [
   { href: "/dashboard",    label: "Overview",     icon: LayoutDashboard },
@@ -68,7 +69,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   };
 
   const currentPage = navItems.find((n) => n.href === pathname);
-  const userInitial = session?.user?.name?.[0]?.toUpperCase() ?? "U";
 
   return (
     <div style={{ display: "flex", height: "100dvh", overflow: "hidden", background: "var(--bg-base)" }}>
@@ -381,22 +381,56 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* Avatar */}
-            <Link
-              href="/settings"
-              title="Profile Settings"
-              style={{
-                width: "32px", height: "32px", borderRadius: "50%",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "13px",
-                color: "#080808", flexShrink: 0, textDecoration: "none",
-                transition: "opacity 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-            >
-              {userInitial}
-            </Link>
+        <Link
+  href="/settings"
+  style={{
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    textDecoration: "none",
+    transition: "opacity 0.15s",
+    border: "1px solid var(--border)",
+  }}
+  title="Profile Settings"
+  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+>
+  {session?.user?.avatarUrl ? (
+  <Image
+  src={session.user.avatarUrl}
+  alt="Avatar"
+  width={32}
+  height={32}
+  style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  }}
+/>
+  ) : (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "var(--font-display)",
+        fontWeight: 800,
+        fontSize: "13px",
+        color: "#080808",
+      }}
+    >
+      {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+    </div>
+  )}
+</Link>
           </div>
         </header>
 

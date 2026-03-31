@@ -175,7 +175,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -294,7 +294,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
@@ -358,7 +358,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
                      
                       <span
                         style={{
-                          fontFamily: "(--font-display)",
+                          fontFamily: "var(--font-display)",
                           fontSize: "14px",
                           fontWeight: 600,
                           color: "#fff",
@@ -447,7 +447,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
           </p>
           <p
             style={{
-              fontFamily: "(--font-display)",
+              fontFamily: "var(--font-display)",
               fontSize: "20px",
               fontWeight: 800,
               color: "#fff",
