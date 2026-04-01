@@ -42,7 +42,8 @@ export function SettingsClient({
   const mountedRef                = useRef(false);
 
   // ── Avatar state ───────────────────────────────────────────────
-  const [avatarUrl, setAvatarUrl]     = useState(session?.user?.avatarUrl ?? "");
+  // initialize as undefined so we can detect "not yet loaded"
+const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(undefined);
   const [uploading, setUploading]     = useState(false);
   const [uploadError, setUploadError] = useState("");
   const imageSrc = avatarUrl ?? session?.user?.avatarUrl ?? null;
@@ -56,16 +57,15 @@ export function SettingsClient({
   const [deleteError, setDeleteError]   = useState<Record<string, string>>({});
   const [isPending, startTransition]    = useTransition();
 
-  useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
-    Promise.resolve().then(() => {
-      setMounted(true);
-      if (session?.user?.avatarUrl && !avatarUrl) {
-        setAvatarUrl(session.user.avatarUrl);
-      }
-    });
-  }, [session?.user?.avatarUrl, avatarUrl]);
+useEffect(() => {
+  if (mountedRef.current) return;
+  mountedRef.current = true;
+  Promise.resolve().then(() => {
+    setMounted(true);
+    // Always sync from session on mount, not just when avatarUrl is empty
+    setAvatarUrl(session?.user?.avatarUrl ?? null);
+  });
+}, [session?.user?.avatarUrl]);
 
   // ── Save profile ───────────────────────────────────────────────
   const handleSave = async () => {
