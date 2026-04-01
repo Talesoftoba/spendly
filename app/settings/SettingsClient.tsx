@@ -42,7 +42,7 @@ export function SettingsClient({
   const mountedRef                = useRef(false);
 
   // ── Avatar state ───────────────────────────────────────────────
-  // initialize as undefined so we can detect "not yet loaded"
+  // initialize as undefined so we can detect "not yet loadedd"
 const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(undefined);
   const [uploading, setUploading]     = useState(false);
   const [uploadError, setUploadError] = useState("");
