@@ -409,16 +409,18 @@ const { data: session, status } = useSession();
     }} />
   ) : session?.user?.avatarUrl ? (
     <Image
-      src={session.user.avatarUrl}
-      alt="Avatar"
-      width={32}
-      height={32}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-      }}
-    />
+  src={session.user.avatarUrl}
+  alt="Avatar"
+  width={32}
+  height={32}
+  loading="eager"
+  priority
+  style={{
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  }}
+/>
   ) : (
     <div
       style={{

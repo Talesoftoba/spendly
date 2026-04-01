@@ -258,20 +258,22 @@ const handleRemoveAvatar = async () => {
       border: "2px solid var(--border)",
     }} />
   ) : imageSrc ? (
-    <Image
-      src={imageSrc}
-      alt="Avatar"
-      width={64}
-      height={64}
-      style={{
-        width: "64px",
-        height: "64px",
-        borderRadius: "14px",
-        objectFit: "cover",
-        border: "2px solid var(--border)",
-        display: "block",
-      }}
-    />
+ <Image
+  src={imageSrc}
+  alt="Avatar"
+  width={64}
+  height={64}
+  loading="eager"
+  priority
+  style={{
+    width: "64px",
+    height: "64px",
+    borderRadius: "14px",
+    objectFit: "cover",
+    border: "2px solid var(--border)",
+    display: "block",
+  }}
+/>
   ) : (
     <div
       style={{
