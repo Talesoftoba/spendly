@@ -381,12 +381,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* Avatar */}
-        <Link
+<Link
   href="/settings"
   style={{
     width: "32px",
     height: "32px",
-    borderRadius: "50%",
+    borderRadius: "9px",
     overflow: "hidden",
     display: "flex",
     alignItems: "center",
@@ -401,17 +401,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
 >
   {session?.user?.avatarUrl ? (
-  <Image
-  src={session.user.avatarUrl}
-  alt="Avatar"
-  width={32}
-  height={32}
-  style={{
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  }}
-/>
+    <Image
+      src={session.user.avatarUrl}
+      alt="Avatar"
+      width={32}
+      height={32}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+      }}
+    />
   ) : (
     <div
       style={{

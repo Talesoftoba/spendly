@@ -33,30 +33,30 @@ export const authOptions: NextAuthOptions = {
         );
         if (!isValid) return null;
 
-        return { id: user.id, email: user.email, name: user.name, avatar: user.avatarUrl, };
+        return { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl };
       },
     }),
   ],
-callbacks: {
-  async jwt({ token, user, trigger, session }) {
-    if (user) {
-      token.id = user.id;
-      token.name = user.name;
-      token.avatarUrl = user.avatarUrl;
-    }
-    if (trigger === "update") {
-      if (session?.name) token.name = session.name;
-      if (session?.avatarUrl) token.avatarUrl = session.avatarUrl;
-    }
-    return token;
+  callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.avatarUrl = user.avatarUrl;
+      }
+      if (trigger === "update") {
+        if ("name" in session) token.name = session.name;
+        if ("avatarUrl" in session) token.avatarUrl = session.avatarUrl;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.avatarUrl = token.avatarUrl as string | null;
+      }
+      return session;
+    },
   },
-  async session({ session, token }) {
-    if (token) {
-      session.user.id = token.id as string;
-      session.user.name = token.name as string;
-      session.user.avatarUrl = token.avatarUrl as string | undefined;
-    }
-    return session;
-  },
-},
 };

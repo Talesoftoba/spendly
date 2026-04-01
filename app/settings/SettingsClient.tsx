@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useTransition } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "../components/layout/ThemeProvider";
 import { useCurrency } from "../components/layout/CurrencyProvider";
-import { updateProfile, createCategory, deleteCategory } from "../lib/actions";
+import { updateProfile, createCategory, deleteCategory, removeAvatar } from "../lib/actions";
 import { CategoryIcon } from "../components/ui/CategoryIcon";
 import { Plus, X, Trash2 } from "lucide-react";
 import type { Category } from "@/types";
@@ -12,6 +12,8 @@ import Image from "next/image";
 
 type Props = {
   categories: Category[];
+  savedName: string;
+  savedCurrency: string;
 };
 
 // ── Preset colors for the color picker ────────────────────────────
@@ -21,14 +23,18 @@ const PRESET_COLORS = [
   "#ff4747", "#47d4ff", "#c847ff", "#ff8c47",
 ];
 
-export function SettingsClient({ categories: initialCategories }: Props) {
+export function SettingsClient({
+  categories: initialCategories,
+  savedName,
+  savedCurrency,
+}: Props) {
   const { data: session, update } = useSession();
   const { theme, setTheme } = useTheme();
   const { setCurrency: updateCurrency } = useCurrency();
 
   // ── Profile state ──────────────────────────────────────────────
-  const [name, setName]           = useState("");
-  const [currency, setCurrency]   = useState("USD");
+  const [name, setName]           = useState(savedName);
+  const [currency, setCurrency]   = useState(savedCurrency);
   const [saved, setSaved]         = useState(false);
   const [saving, setSaving]       = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -39,6 +45,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
   const [avatarUrl, setAvatarUrl]     = useState(session?.user?.avatarUrl ?? "");
   const [uploading, setUploading]     = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const imageSrc = avatarUrl ?? session?.user?.avatarUrl ?? null;
 
   // ── Category state ─────────────────────────────────────────────
   const [categories, setCategories]     = useState(initialCategories);
@@ -54,9 +61,11 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     mountedRef.current = true;
     Promise.resolve().then(() => {
       setMounted(true);
-      if (session?.user?.name) setName(session.user.name);
+      if (session?.user?.avatarUrl && !avatarUrl) {
+        setAvatarUrl(session.user.avatarUrl);
+      }
     });
-  }, [session?.user?.name]);
+  }, [session?.user?.avatarUrl, avatarUrl]);
 
   // ── Save profile ───────────────────────────────────────────────
   const handleSave = async () => {
@@ -115,6 +124,13 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     }
   };
 
+  // ── Remove avatar ──────────────────────────────────────────────
+const handleRemoveAvatar = async () => {
+  await removeAvatar();
+  setAvatarUrl("");
+  await update({ avatarUrl: null }); // ← now correctly passes null through the jwt callback
+};
+
   // ── Create category ────────────────────────────────────────────
   const handleCreateCategory = () => {
     if (!catName.trim()) {
@@ -139,7 +155,6 @@ export function SettingsClient({ categories: initialCategories }: Props) {
         return;
       }
 
-      // Add new category to local state immediately
       if ("category" in result && result.category) {
         setCategories((prev) => [...prev, result.category as Category]);
       }
@@ -214,7 +229,6 @@ export function SettingsClient({ categories: initialCategories }: Props) {
     marginBottom: "24px",
   };
 
-  const imageSrc = avatarUrl ?? session?.user?.avatarUrl ?? null;
   return (
     <div className="animate-fade-up" style={{ maxWidth: "560px" }}>
 
@@ -232,27 +246,29 @@ export function SettingsClient({ categories: initialCategories }: Props) {
               marginBottom: "8px",
             }}
           >
-            {/* Avatar image or initial */}
-        {/* Avatar image or initial */}
-<div style={{ position: "relative", flexShrink: 0 }}>
-  {imageSrc ? (
-    <Image
-      src={imageSrc}
-      alt="Avatar"
-      width={64}
-      height={64}
-      style={{
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "2px solid var(--border)",
-      }}
-    />
+            {/* Avatar box */}
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              {imageSrc ? (
+                <Image
+                  src={imageSrc}
+                  alt="Avatar"
+                  width={64}
+                  height={64}
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    borderRadius: "14px",
+                    objectFit: "cover",
+                    border: "2px solid var(--border)",
+                    display: "block",
+                  }}
+                />
               ) : (
                 <div
                   style={{
                     width: "64px",
                     height: "64px",
-                    borderRadius: "50%",
+                    borderRadius: "14px",
                     background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
                     display: "flex",
                     alignItems: "center",
@@ -269,16 +285,16 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 </div>
               )}
 
-              {/* Upload overlay button */}
+              {/* Upload button */}
               <label
                 htmlFor="avatar-upload"
                 style={{
                   position: "absolute",
-                  bottom: 0,
-                  right: 0,
+                  bottom: "-6px",
+                  right: "-6px",
                   width: "22px",
                   height: "22px",
-                  borderRadius: "50%",
+                  borderRadius: "7px",
                   background: "#e8ff47",
                   display: "flex",
                   alignItems: "center",
@@ -316,7 +332,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
               />
             </div>
 
-            {/* Name and email */}
+            {/* Name, email, status, remove option */}
             <div style={{ minWidth: 0 }}>
               <p
                 style={{
@@ -345,42 +361,44 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 {session?.user?.email ?? ""}
               </p>
 
-              {/* Upload status */}
+              {/* Status messages */}
               {uploading && (
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "#47ffe8",
-                    marginTop: "4px",
-                  }}
-                >
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "#47ffe8", marginTop: "4px" }}>
                   Uploading...
                 </p>
               )}
               {uploadError && (
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "#ff6b47",
-                    marginTop: "4px",
-                  }}
-                >
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "#ff6b47", marginTop: "4px" }}>
                   {uploadError}
                 </p>
               )}
+
+              {/* Action hints */}
               {!uploading && !uploadError && (
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "var(--text-muted)",
-                    marginTop: "4px",
-                  }}
-                >
-                  Click the icon to change photo
-                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "6px" }}>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
+                    Click icon to change photo
+                  </p>
+
+                  {imageSrc && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "11px",
+                        color: "#ff6b47",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        textDecoration: "underline",
+                        textUnderlineOffset: "2px",
+                      }}
+                    >
+                      Remove photo
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -487,14 +505,8 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
               >
-                {/* Category icon */}
-                <CategoryIcon
-                  name={cat.name}
-                  color={cat.color}
-                  size="md"
-                />
+                <CategoryIcon name={cat.name} color={cat.color} size="md" />
 
-                {/* Name */}
                 <p
                   style={{
                     flex: 1, fontFamily: "var(--font-display)", fontSize: "14px",
@@ -504,7 +516,6 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   {cat.name}
                 </p>
 
-                {/* Color dot */}
                 <span
                   style={{
                     width: "10px", height: "10px", borderRadius: "50%",
@@ -512,8 +523,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   }}
                 />
 
-                {/* Delete button — only show for custom categories */}
-                {!["Housing", "Food", "Transport", "Shopping", "Bills", "Entertainment", "Income"].includes(cat.name) && (
+                {!["Housing", "Food", "Transport", "Shopping", "Bills", "Entertainment", "Income"].includes(cat.name) ? (
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     disabled={isPending}
@@ -535,10 +545,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   >
                     <Trash2 size={13} />
                   </button>
-                )}
-
-                {/* Lock icon for default categories */}
-                {["Housing", "Food", "Transport", "Shopping", "Bills", "Entertainment", "Income"].includes(cat.name) && (
+                ) : (
                   <span
                     style={{
                       fontFamily: "var(--font-mono)", fontSize: "10px",
@@ -552,7 +559,6 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                 )}
               </div>
 
-              {/* Delete error for this category */}
               {deleteError[cat.id] && (
                 <p
                   style={{
@@ -692,11 +698,7 @@ export function SettingsClient({ categories: initialCategories }: Props) {
                   border: "1px solid rgba(255,255,255,0.07)",
                 }}
               >
-                <CategoryIcon
-                  name={catName || "?"}
-                  color={catColor}
-                  size="lg"
-                />
+                <CategoryIcon name={catName || "?"} color={catColor} size="lg" />
                 <div>
                   <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "15px", color: "#fff", marginBottom: "2px" }}>
                     {catName || "Category Name"}

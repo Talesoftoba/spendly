@@ -284,3 +284,15 @@ export async function deleteCategory(id: string) {
   revalidatePath("/budgets");
   return { success: true };
 }
+
+export async function removeAvatar() {
+  const userId = await requireUser();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl: null },
+  });
+
+  revalidatePath("/settings");
+  return { success: true };
+}
