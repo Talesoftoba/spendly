@@ -36,7 +36,7 @@ type Alert = {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [alertCount, setAlertCount] = useState(0);
@@ -381,6 +381,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             {/* Avatar */}
+
 <Link
   href="/settings"
   style={{
@@ -400,7 +401,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
   onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
 >
-  {session?.user?.avatarUrl ? (
+  {status === "loading" ? (
+    <div style={{
+      width: "100%",
+      height: "100%",
+      background: "rgba(255,255,255,0.06)",
+    }} />
+  ) : session?.user?.avatarUrl ? (
     <Image
       src={session.user.avatarUrl}
       alt="Avatar"

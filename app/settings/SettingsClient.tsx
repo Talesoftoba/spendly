@@ -28,7 +28,7 @@ export function SettingsClient({
   savedName,
   savedCurrency,
 }: Props) {
-  const { data: session, update } = useSession();
+ const { data: session, update, status } = useSession();
   const { theme, setTheme } = useTheme();
   const { setCurrency: updateCurrency } = useCurrency();
 
@@ -246,44 +246,53 @@ const handleRemoveAvatar = async () => {
               marginBottom: "8px",
             }}
           >
-            {/* Avatar box */}
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              {imageSrc ? (
-                <Image
-                  src={imageSrc}
-                  alt="Avatar"
-                  width={64}
-                  height={64}
-                  style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "14px",
-                    objectFit: "cover",
-                    border: "2px solid var(--border)",
-                    display: "block",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "14px",
-                    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "24px",
-                    color: "#080808",
-                  }}
-                >
-                  {name?.[0]?.toUpperCase() ??
-                    session?.user?.name?.[0]?.toUpperCase() ??
-                    "U"}
-                </div>
-              )}
+          
+           {/* Avatar box */}
+<div style={{ position: "relative", flexShrink: 0 }}>
+  {status === "loading" ? (
+    <div style={{
+      width: "64px",
+      height: "64px",
+      borderRadius: "14px",
+      background: "rgba(255,255,255,0.06)",
+      border: "2px solid var(--border)",
+    }} />
+  ) : imageSrc ? (
+    <Image
+      src={imageSrc}
+      alt="Avatar"
+      width={64}
+      height={64}
+      style={{
+        width: "64px",
+        height: "64px",
+        borderRadius: "14px",
+        objectFit: "cover",
+        border: "2px solid var(--border)",
+        display: "block",
+      }}
+    />
+  ) : (
+    <div
+      style={{
+        width: "64px",
+        height: "64px",
+        borderRadius: "14px",
+        background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "var(--font-display)",
+        fontWeight: 800,
+        fontSize: "24px",
+        color: "#080808",
+      }}
+    >
+      {name?.[0]?.toUpperCase() ??
+        session?.user?.name?.[0]?.toUpperCase() ??
+        "U"}
+    </div>
+  )}
 
               {/* Upload button */}
               <label
