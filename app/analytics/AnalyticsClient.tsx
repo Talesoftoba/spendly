@@ -215,20 +215,21 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
               axisLine={false}
               tickLine={false}
             />
-            <YAxis
-              tick={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 11,
-                fill: "var(--text-muted)",
-              }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v: number) =>
-                v >= 1000
-                  ? `${currencySymbol}${v / 1000}k`
-                  : `${currencySymbol}${v}`
-              }
-            />
+        <YAxis
+  width={56}
+  tick={{
+    fontFamily: "var(--font-mono)",
+    fontSize: 10,
+    fill: "var(--text-muted)",
+  }}
+  axisLine={false}
+  tickLine={false}
+  tickFormatter={(v: number) => {
+    if (v >= 1000000) return `${currencySymbol}${(v / 1000000).toFixed(1)}M`;
+    if (v >= 1000) return `${currencySymbol}${(v / 1000).toFixed(0)}k`;
+    return `${currencySymbol}${v}`;
+  }}
+/>
             <Tooltip
               content={(props) => (
                 <CustomTooltip
