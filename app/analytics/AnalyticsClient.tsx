@@ -10,9 +10,10 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { formatCurrency } from "../lib/utils";
+import { formatCurrency, CURRENCY_SYMBOLS } from "../lib/utils";
 import type { MonthlyData, CategorySpending } from "@/types";
 import { CategoryIcon } from "../components/ui/CategoryIcon";
+
 
 type Props = {
   monthlyData: MonthlyData[];
@@ -68,22 +69,8 @@ function CustomTooltip({ active, payload, label, currency }: ChartTooltipProps) 
 }
 
 export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
-  const { currency } = useCurrency();
-
-  const getCurrencySymbol = (curr: string): string => {
-    return (
-      new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: curr,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      })
-        .formatToParts(0)
-        .find((p) => p.type === "currency")?.value ?? curr
-    );
-  };
-
-  const currencySymbol = getCurrencySymbol(currency);
+ const { currency } = useCurrency();
+const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
   const totalIncome = monthlyData.reduce((a, m) => a + m.income, 0);
   const totalExpense = monthlyData.reduce((a, m) => a + m.expense, 0);

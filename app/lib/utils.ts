@@ -7,13 +7,27 @@ import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  NGN: "₦",
+  CAD: "CA$",
+  AUD: "A$",
+};
 
 export function formatCurrency(amount: number, currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
+  const formatted = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
   }).format(amount);
+
+  const symbol = CURRENCY_SYMBOLS[currency];
+  if (symbol) {
+    return formatted.replace(currency, symbol).trim();
+  }
+  return formatted;
 }
 
 export function formatDate(date: Date | string): string {

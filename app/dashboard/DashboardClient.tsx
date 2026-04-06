@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { formatCurrency, formatDate } from "../lib/utils";
+import { formatCurrency, formatDate, CURRENCY_SYMBOLS } from "../lib/utils";
 import type {
   DashboardStats,
   MonthlyData,
@@ -122,15 +122,7 @@ export function DashboardClient({
 }: Props) {
   const { currency } = useCurrency();
 
-  const currencySymbol =
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })
-      .formatToParts(0)
-      .find((p) => p.type === "currency")?.value ?? currency;
+ const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
   return (
     <div
