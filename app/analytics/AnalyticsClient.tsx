@@ -200,7 +200,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={monthlyData} barGap={4}>
+          <BarChart data={monthlyData} barGap={4} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="var(--border)"
@@ -215,8 +215,9 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
               axisLine={false}
               tickLine={false}
             />
-        <YAxis
-  width={56}
+<YAxis
+  width={64}
+  tickMargin={4}
   tick={{
     fontFamily: "var(--font-mono)",
     fontSize: 10,
