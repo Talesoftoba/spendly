@@ -1,5 +1,6 @@
 import { X, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/app/lib/utils"; 
+import { useCurrency } from "../layout/CurrencyProvider"; 
 
 type Props = {
   alert: {
@@ -13,6 +14,8 @@ type Props = {
 };
 
 export function BudgetAlertToast({ alert, onDismiss }: Props) {
+  const { currency } = useCurrency();
+
   return (
     <div
       className="animate-slide-in"
@@ -23,12 +26,11 @@ export function BudgetAlertToast({ alert, onDismiss }: Props) {
         padding: "16px",
         borderRadius: "16px",
         maxWidth: "320px",
-        background: "#0f0f0f",
+        background: "var(--bg-card)",
         border: "1px solid rgba(255,107,71,0.4)",
         boxShadow: "0 0 40px rgba(255,107,71,0.15)",
       }}
     >
-      {/* Icon */}
       <div
         style={{
           width: "32px",
@@ -44,7 +46,6 @@ export function BudgetAlertToast({ alert, onDismiss }: Props) {
         <AlertTriangle size={14} color="#ff6b47" />
       </div>
 
-      {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
           style={{
@@ -65,20 +66,19 @@ export function BudgetAlertToast({ alert, onDismiss }: Props) {
             lineHeight: 1.5,
           }}
         >
-          <span style={{ color: "#fff", fontWeight: 500 }}>
+          <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>
             {alert.categoryName}
           </span>{" "}
           exceeded by{" "}
           <span style={{ color: "#ff6b47" }}>
-            {formatCurrency(alert.overBy)}
+            {formatCurrency(alert.overBy, currency)}
           </span>
           <br />
-          {formatCurrency(alert.spent)} spent of{" "}
-          {formatCurrency(alert.limit)} limit
+          {formatCurrency(alert.spent, currency)} spent of{" "}
+          {formatCurrency(alert.limit, currency)} limit
         </p>
       </div>
 
-      {/* Dismiss */}
       <button
         onClick={onDismiss}
         style={{
