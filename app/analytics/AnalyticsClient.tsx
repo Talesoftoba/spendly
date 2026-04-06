@@ -200,7 +200,7 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={monthlyData} barGap={4} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <BarChart data={monthlyData} barGap={4} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="var(--border)"
@@ -216,8 +216,8 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
               tickLine={false}
             />
 <YAxis
-  width={64}
-  tickMargin={4}
+  width={80}
+  tickMargin={6}
   tick={{
     fontFamily: "var(--font-mono)",
     fontSize: 10,
@@ -226,9 +226,9 @@ export function AnalyticsClient({ monthlyData, categorySpending }: Props) {
   axisLine={false}
   tickLine={false}
   tickFormatter={(v: number) => {
-    if (v >= 1000000) return `${currencySymbol}${(v / 1000000).toFixed(1)}M`;
-    if (v >= 1000) return `${currencySymbol}${(v / 1000).toFixed(0)}k`;
-    return `${currencySymbol}${v}`;
+    if (v >= 1000000) return `${currencySymbol}${Math.round(v / 1000000)}M`;
+    if (v >= 1000) return `${currencySymbol}${Math.round(v / 1000)}k`;
+    return `${currencySymbol}${Math.round(v)}`;
   }}
 />
             <Tooltip

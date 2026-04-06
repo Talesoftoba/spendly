@@ -334,7 +334,7 @@ export function DashboardClient({
         </div>
 
         <ResponsiveContainer width="100%" height={200}>
-         <AreaChart data={monthlyData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+       <AreaChart data={monthlyData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
             <defs>
               <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="#e8ff47" stopOpacity={0.2} />
@@ -352,9 +352,9 @@ export function DashboardClient({
               axisLine={false}
               tickLine={false}
             />
- <YAxis
-  width={64}
-  tickMargin={4}
+<YAxis
+  width={80}
+  tickMargin={6}
   tick={{
     fontFamily: "var(--font-mono)",
     fontSize: 10,
@@ -363,9 +363,9 @@ export function DashboardClient({
   axisLine={false}
   tickLine={false}
   tickFormatter={(v: number) => {
-    if (v >= 1000000) return `${currencySymbol}${(v / 1000000).toFixed(1)}M`;
-    if (v >= 1000) return `${currencySymbol}${(v / 1000).toFixed(0)}k`;
-    return `${currencySymbol}${v}`;
+    if (v >= 1000000) return `${currencySymbol}${Math.round(v / 1000000)}M`;
+    if (v >= 1000) return `${currencySymbol}${Math.round(v / 1000)}k`;
+    return `${currencySymbol}${Math.round(v)}`;
   }}
 />
             <Tooltip
