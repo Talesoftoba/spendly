@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth"; 
 import { getOverBudgetAlerts } from "@/app/lib/data"; 
 
+// app/api/sse/route.ts — add this at the top
+
 export const dynamic = "force-dynamic";
 
 export async function GET() {
