@@ -81,9 +81,14 @@ export async function GET() {
         }
       };
 
-      send({ type: "connected", message: "Live alerts active" });
-      await checkAlerts();
-      const interval = setInterval(checkAlerts, 30_000);
+    
+send({ type: "connected", message: "Live alerts active" });
+
+// small delay to let the client attach onmessage before first check
+await new Promise((resolve) => setTimeout(resolve, 500));
+await checkAlerts();
+
+const interval = setInterval(checkAlerts, 30_000);
 
       return () => {
         closed = true;

@@ -36,7 +36,7 @@ type Alert = {
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [alertCount, setAlertCount] = useState(0);
@@ -45,9 +45,16 @@ const { data: session, status } = useSession();
   // SSE Connection
   useEffect(() => {
     const eventSource = new EventSource("/api/sse");
-    eventSource.onopen = () => setConnected(true);
+
+    eventSource.onopen = () => {};
+
     eventSource.onmessage = (e) => {
       const data = JSON.parse(e.data);
+
+      if (data.type === "connected") {
+        setConnected(true);
+      }
+
       if (data.type === "budget_alert") {
         const newAlert: Alert = {
           id: `${data.categoryName}-${Date.now()}`,
@@ -56,11 +63,18 @@ const { data: session, status } = useSession();
           limit: data.limit,
           overBy: data.overBy,
         };
-        setAlerts((prev) => [...prev, newAlert]);
+        setAlerts((prev) => {
+          // prevent duplicate alerts for the same category
+          const exists = prev.some((a) => a.categoryName === newAlert.categoryName);
+          if (exists) return prev;
+          return [...prev, newAlert];
+        });
         setAlertCount((c) => c + 1);
       }
     };
+
     eventSource.onerror = () => setConnected(false);
+
     return () => eventSource.close();
   }, []);
 
@@ -340,10 +354,7 @@ const { data: session, status } = useSession();
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
             {/* Alerts bell — mobile only */}
             {alertCount > 0 && (
-              <div
-                className="mobile-only"
-                style={{ position: "relative" }}
-              >
+              <div className="mobile-only" style={{ position: "relative" }}>
                 <button
                   style={{
                     width: "34px", height: "34px", display: "flex", alignItems: "center",
@@ -381,65 +392,64 @@ const { data: session, status } = useSession();
             </Link>
 
             {/* Avatar */}
-
-<Link
-  href="/settings"
-  style={{
-    width: "32px",
-    height: "32px",
-    borderRadius: "9px",
-    overflow: "hidden",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-    textDecoration: "none",
-    transition: "opacity 0.15s",
-    border: "1px solid var(--border)",
-  }}
-  title="Profile Settings"
-  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
->
-  {status === "loading" ? (
-    <div style={{
-      width: "100%",
-      height: "100%",
-      background: "rgba(255,255,255,0.06)",
-    }} />
-  ) : session?.user?.avatarUrl ? (
-    <Image
-  src={session.user.avatarUrl}
-  alt="Avatar"
-  width={32}
-  height={32}
-  loading="eager"
-  priority
-  style={{
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  }}
-/>
-  ) : (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "var(--font-display)",
-        fontWeight: 800,
-        fontSize: "13px",
-        color: "#080808",
-      }}
-    >
-      {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
-    </div>
-  )}
-</Link>
+            <Link
+              href="/settings"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "9px",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                textDecoration: "none",
+                transition: "opacity 0.15s",
+                border: "1px solid var(--border)",
+              }}
+              title="Profile Settings"
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              {status === "loading" ? (
+                <div style={{
+                  width: "100%",
+                  height: "100%",
+                  background: "rgba(255,255,255,0.06)",
+                }} />
+              ) : session?.user?.avatarUrl ? (
+                <Image
+                  src={session.user.avatarUrl}
+                  alt="Avatar"
+                  width={32}
+                  height={32}
+                  loading="eager"
+                  priority
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 800,
+                    fontSize: "13px",
+                    color: "#080808",
+                  }}
+                >
+                  {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+                </div>
+              )}
+            </Link>
           </div>
         </header>
 
@@ -449,7 +459,7 @@ const { data: session, status } = useSession();
             flex: 1,
             overflowY: "auto",
             overflowX: "hidden",
-            padding: "20px 20px 88px 20px", // 88px bottom padding for mobile nav
+            padding: "20px 20px 88px 20px",
             boxSizing: "border-box",
           }}
         >
@@ -468,7 +478,7 @@ const { data: session, status } = useSession();
           background: "var(--bg-card)",
           borderTop: "1px solid var(--border)",
           zIndex: 100,
-          display: "none", // shown via CSS class
+          display: "none",
           alignItems: "center",
           justifyContent: "space-around",
           padding: "8px 4px",
@@ -498,7 +508,6 @@ const { data: session, status } = useSession();
                 flex: 1,
               }}
             >
-              {/* Active indicator dot */}
               {active && (
                 <span
                   style={{
@@ -517,7 +526,6 @@ const { data: session, status } = useSession();
               <span style={{ fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: active ? 700 : 500, whiteSpace: "nowrap" }}>
                 {label === "Transactions" ? "Txns" : label}
               </span>
-              {/* Budget alert dot */}
               {label === "Budgets" && alertCount > 0 && (
                 <span
                   style={{
