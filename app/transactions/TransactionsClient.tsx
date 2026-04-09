@@ -85,7 +85,10 @@ export function TransactionsClient({
         return;
       }
 
+      // Update local state optimistically
       setTransactions((prev) => [result as TransactionWithCategory, ...prev]);
+
+      // Close modal and reset form
       setShowModal(false);
       setForm({
         title: "",
@@ -96,7 +99,10 @@ export function TransactionsClient({
         note: "",
       });
 
-      router.refresh();
+      // Signal the layout to reconnect SSE for fresh budget check.
+      // Do NOT call router.refresh() here — it causes a double SSE
+      // reconnect which triggers duplicate budget alerts.
+      window.dispatchEvent(new CustomEvent("transaction:added"));
     });
   };
 
@@ -104,6 +110,8 @@ export function TransactionsClient({
     startTransition(async () => {
       await deleteTransaction(id);
       setTransactions((prev) => prev.filter((t) => t.id !== id));
+      // Also trigger a fresh budget check after deletion
+      window.dispatchEvent(new CustomEvent("transaction:added"));
     });
   };
 

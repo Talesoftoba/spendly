@@ -1,8 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth"; 
-import { getOverBudgetAlerts } from "@/app/lib/data"; 
+// app/api/sse/route.ts
 
-// app/api/sse/route.ts — add this at the top
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth";
+import { getOverBudgetAlerts } from "@/app/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,7 @@ export async function GET() {
 
   const userId = session.user.id;
   let closed = false;
-
-  // Track which categories have already been alerted this session
-  const alertedCategories = new Set<string>();
+  let interval: ReturnType<typeof setInterval>;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -43,52 +41,41 @@ export async function GET() {
         try {
           const overBudget = await getOverBudgetAlerts(userId);
 
+          // Always send current over-budget state — client handles deduplication
           overBudget.forEach((b) => {
-            const key = `${b.category.name}-${b.category.id}`;
-
-            // Only send alert if we haven't already sent one
-            // for this category in this session
-            if (!alertedCategories.has(key)) {
-              alertedCategories.add(key);
-              send({
-                type: "budget_alert",
-                categoryName: b.category.name,
-                spent: b.spent,
-                limit: b.limit,
-                overBy: b.spent - b.limit,
-              });
-            }
+            send({
+              type: "budget_alert",
+              categoryName: b.category.name,
+              spent: b.spent,
+              limit: b.limit,
+              overBy: b.spent - b.limit,
+            });
           });
 
-          // If a category comes back under budget
-          // remove it from alerted so it can alert again if overspent later
-          const overBudgetKeys = new Set(
-            overBudget.map((b) => `${b.category.name}-${b.category.id}`)
-          );
-          alertedCategories.forEach((key) => {
-            if (!overBudgetKeys.has(key)) {
-              alertedCategories.delete(key);
-            }
+          // Send cleared signal for categories that are no longer over budget
+          // Client uses this to remove stale alerts
+          send({
+            type: "budget_state",
+            overBudgetCategories: overBudget.map((b) => b.category.name),
           });
 
-          // Send heartbeat only if no alerts fired
           if (overBudget.length === 0) {
             send({ type: "heartbeat", timestamp: Date.now() });
           }
-
         } catch {
-          // DB error — skip this check
+          // DB error — skip this tick
         }
       };
 
-    
-send({ type: "connected", message: "Live alerts active" });
+      // Send connected signal
+      send({ type: "connected", message: "Live alerts active" });
 
-// small delay to let the client attach onmessage before first check
-await new Promise((resolve) => setTimeout(resolve, 500));
-await checkAlerts();
+      // Small delay so client can attach onmessage before first check
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      await checkAlerts();
 
-const interval = setInterval(checkAlerts, 30_000);
+      // Poll every 5s for near-realtime feedback after transactions are added
+      interval = setInterval(checkAlerts, 5_000);
 
       return () => {
         closed = true;

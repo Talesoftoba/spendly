@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -39,47 +39,116 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [alertCount, setAlertCount] = useState(0);
   const [connected, setConnected] = useState(false);
+
+  // Derived — always in sync with actual visible alerts, never drifts
+  const alertCount = alerts.length;
+
+  const activeAlertCategories = useRef<Set<string>>(new Set());
 
   // SSE Connection
   useEffect(() => {
-    const eventSource = new EventSource("/api/sse");
+    let retryTimeout: ReturnType<typeof setTimeout>;
+    let eventSource: EventSource;
 
-    eventSource.onopen = () => {};
+    const connect = () => {
+      eventSource = new EventSource("/api/sse");
 
-    eventSource.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-
-      if (data.type === "connected") {
+      eventSource.onopen = () => {
         setConnected(true);
-      }
+      };
 
-      if (data.type === "budget_alert") {
-        const newAlert: Alert = {
-          id: `${data.categoryName}-${Date.now()}`,
-          categoryName: data.categoryName,
-          spent: data.spent,
-          limit: data.limit,
-          overBy: data.overBy,
-        };
-        setAlerts((prev) => {
-          // prevent duplicate alerts for the same category
-          const exists = prev.some((a) => a.categoryName === newAlert.categoryName);
-          if (exists) return prev;
-          return [...prev, newAlert];
-        });
-        setAlertCount((c) => c + 1);
-      }
+      eventSource.onmessage = (e) => {
+        let data: Record<string, unknown>;
+        try {
+          data = JSON.parse(e.data);
+        } catch {
+          return;
+        }
+
+        if (data.type === "connected") {
+          setConnected(true);
+        }
+
+        if (data.type === "budget_alert") {
+          const categoryName = data.categoryName as string;
+          const incoming: Alert = {
+            id: categoryName, // stable ID keyed by category name — no timestamp
+            categoryName,
+            spent: data.spent as number,
+            limit: data.limit as number,
+            overBy: data.overBy as number,
+          };
+
+          setAlerts((prev) => {
+            const existingIndex = prev.findIndex(
+              (a) => a.categoryName === categoryName
+            );
+            if (existingIndex !== -1) {
+              // Update in place if values changed
+              const existing = prev[existingIndex];
+              if (
+                existing.spent === incoming.spent &&
+                existing.overBy === incoming.overBy
+              ) {
+                return prev; // no change
+              }
+              const updated = [...prev];
+              updated[existingIndex] = incoming;
+              return updated;
+            }
+            // New category alert
+            activeAlertCategories.current.add(categoryName);
+            return [...prev, incoming];
+          });
+        }
+
+        // Auto-remove alerts for categories no longer over budget
+        if (data.type === "budget_state") {
+          const currentlyOver = new Set(data.overBudgetCategories as string[]);
+          setAlerts((prev) => {
+            const next = prev.filter((a) => currentlyOver.has(a.categoryName));
+            activeAlertCategories.current.forEach((cat) => {
+              if (!currentlyOver.has(cat)) {
+                activeAlertCategories.current.delete(cat);
+              }
+            });
+            return next;
+          });
+        }
+      };
+
+      eventSource.onerror = () => {
+        setConnected(false);
+        eventSource.close();
+        retryTimeout = setTimeout(connect, 3_000);
+      };
     };
 
-    eventSource.onerror = () => setConnected(false);
+    connect();
 
-    return () => eventSource.close();
+    const handleTxnAdded = () => {
+      eventSource.close();
+      clearTimeout(retryTimeout);
+      setConnected(false);
+      retryTimeout = setTimeout(connect, 100);
+    };
+
+    window.addEventListener("transaction:added", handleTxnAdded);
+
+    return () => {
+      eventSource.close();
+      clearTimeout(retryTimeout);
+      window.removeEventListener("transaction:added", handleTxnAdded);
+    };
   }, []);
 
   const dismissAlert = (id: string) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+    setAlerts((prev) => {
+      const alert = prev.find((a) => a.id === id);
+      if (alert) activeAlertCategories.current.delete(alert.categoryName);
+      return prev.filter((a) => a.id !== id);
+    });
   };
 
   const currentPage = navItems.find((n) => n.href === pathname);
@@ -116,7 +185,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden" }}>
-            {/* Logo mark */}
             <div
               style={{
                 width: "32px",
@@ -147,7 +215,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Collapse toggle */}
           {sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(false)}
@@ -205,7 +272,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     {label}
                   </span>
                 )}
-                {/* Budget alert badge */}
                 {label === "Budgets" && alertCount > 0 && (
                   <span
                     style={{
@@ -237,7 +303,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom section */}
         <div style={{ padding: "8px", borderTop: "1px solid var(--border)", flexShrink: 0 }}>
-          {/* Live indicator */}
           {sidebarOpen && (
             <div
               style={{
@@ -264,13 +329,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   {connected ? "Live Alerts" : "Connecting..."}
                 </p>
                 <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", marginTop: "2px" }}>
-                  {alertCount} received
+                  {alertCount} active
                 </p>
               </div>
             </div>
           )}
 
-          {/* Expand button when collapsed */}
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
@@ -286,7 +350,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </button>
           )}
 
-          {/* Sign out */}
           <button
             onClick={() => signOut({ callbackUrl: "/auth/login" })}
             style={{
@@ -325,9 +388,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             zIndex: 5,
           }}
         >
-          {/* Left: mobile logo + page title */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-            {/* Mobile logo — hidden on desktop via CSS */}
             <div
               className="mobile-only"
               style={{
@@ -350,9 +411,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Right: actions */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            {/* Alerts bell — mobile only */}
             {alertCount > 0 && (
               <div className="mobile-only" style={{ position: "relative" }}>
                 <button
@@ -374,7 +433,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             )}
 
-            {/* Quick add */}
             <Link
               href="/transactions"
               style={{
@@ -391,20 +449,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               + Add
             </Link>
 
-            {/* Avatar */}
             <Link
               href="/settings"
               style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "9px",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                textDecoration: "none",
-                transition: "opacity 0.15s",
+                width: "32px", height: "32px", borderRadius: "9px", overflow: "hidden",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, textDecoration: "none", transition: "opacity 0.15s",
                 border: "1px solid var(--border)",
               }}
               title="Profile Settings"
@@ -412,11 +462,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
               {status === "loading" ? (
-                <div style={{
-                  width: "100%",
-                  height: "100%",
-                  background: "rgba(255,255,255,0.06)",
-                }} />
+                <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.06)" }} />
               ) : session?.user?.avatarUrl ? (
                 <Image
                   src={session.user.avatarUrl}
@@ -425,25 +471,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   height={32}
                   loading="eager"
                   priority
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
                 <div
                   style={{
-                    width: "100%",
-                    height: "100%",
+                    width: "100%", height: "100%",
                     background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 800,
-                    fontSize: "13px",
-                    color: "#080808",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "13px", color: "#080808",
                   }}
                 >
                   {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
@@ -471,17 +507,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <nav
         className="mobile-bottom-nav"
         style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: "var(--bg-card)",
-          borderTop: "1px solid var(--border)",
-          zIndex: 100,
-          display: "none",
-          alignItems: "center",
-          justifyContent: "space-around",
-          padding: "8px 4px",
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          background: "var(--bg-card)", borderTop: "1px solid var(--border)",
+          zIndex: 100, display: "none", alignItems: "center",
+          justifyContent: "space-around", padding: "8px 4px",
           paddingBottom: "calc(8px + env(safe-area-inset-bottom))",
           boxSizing: "border-box",
         }}
@@ -493,31 +522,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               key={href}
               href={href}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "3px",
-                padding: "6px 10px",
-                borderRadius: "10px",
-                textDecoration: "none",
+                display: "flex", flexDirection: "column", alignItems: "center",
+                justifyContent: "center", gap: "3px", padding: "6px 10px",
+                borderRadius: "10px", textDecoration: "none",
                 color: active ? "#e8ff47" : "var(--text-muted)",
-                transition: "color 0.15s",
-                minWidth: "48px",
-                position: "relative",
-                flex: 1,
+                transition: "color 0.15s", minWidth: "48px",
+                position: "relative", flex: 1,
               }}
             >
               {active && (
                 <span
                   style={{
-                    position: "absolute",
-                    top: "2px",
-                    left: "50%",
+                    position: "absolute", top: "2px", left: "50%",
                     transform: "translateX(-50%)",
-                    width: "4px",
-                    height: "4px",
-                    borderRadius: "50%",
+                    width: "4px", height: "4px", borderRadius: "50%",
                     background: "#e8ff47",
                   }}
                 />
@@ -531,8 +549,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   style={{
                     position: "absolute", top: "4px", right: "8px",
                     width: "7px", height: "7px", borderRadius: "50%",
-                    background: "#ff6b47",
-                    border: "1px solid var(--bg-card)",
+                    background: "#ff6b47", border: "1px solid var(--bg-card)",
                   }}
                 />
               )}
@@ -544,16 +561,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Toast alerts */}
       <div
         style={{
-          position: "fixed",
-          top: "68px",
-          right: "16px",
-          zIndex: 200,
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          maxWidth: "320px",
-          width: "calc(100vw - 32px)",
-          pointerEvents: "none",
+          position: "fixed", top: "68px", right: "16px", zIndex: 200,
+          display: "flex", flexDirection: "column", gap: "10px",
+          maxWidth: "320px", width: "calc(100vw - 32px)", pointerEvents: "none",
         }}
       >
         {alerts.map((alert) => (
