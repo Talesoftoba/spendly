@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition, useEffect } from "react";
 import {
   Search,
@@ -36,7 +35,6 @@ export function TransactionsClient({
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   const [form, setForm] = useState({
     title: "",

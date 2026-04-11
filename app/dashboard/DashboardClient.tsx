@@ -31,60 +31,26 @@ type Props = {
   recentTransactions: TransactionWithCategory[];
 };
 
-// ── Tooltip types ─────────────────────────────────────────────────
-
 type ChartTooltipProps = {
   active?: boolean;
   label?: string | number;
-  payload?: ReadonlyArray<{
-    name?: string;
-    value?: number | string;
-    color?: string;
-  }>;
+  payload?: ReadonlyArray<{ name?: string; value?: number | string; color?: string }>;
   currency: string;
 };
 
 type PieTooltipProps = {
   active?: boolean;
-  payload?: ReadonlyArray<{
-    name?: string;
-    value?: number | string;
-  }>;
+  payload?: ReadonlyArray<{ name?: string; value?: number | string }>;
   currency: string;
 };
-
-// ── Tooltip components — declared outside render ──────────────────
 
 function ChartTooltip({ active, payload, label, currency }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        borderRadius: "10px",
-        padding: "12px 16px",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "11px",
-          color: "var(--text-muted)",
-          marginBottom: "8px",
-        }}
-      >
-        {label}
-      </p>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px 16px" }}>
+      <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", marginBottom: "8px" }}>{label}</p>
       {payload.map((p, i) => (
-        <p
-          key={i}
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "12px",
-            color: p.color,
-          }}
-        >
+        <p key={i} style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: p.color }}>
           {p.name}: {formatCurrency(Number(p.value), currency)}
         </p>
       ))}
@@ -95,23 +61,11 @@ function ChartTooltip({ active, payload, label, currency }: ChartTooltipProps) {
 function PieTooltip({ active, payload, currency }: PieTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div
-      style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border)",
-        borderRadius: "10px",
-        padding: "10px 14px",
-        fontFamily: "var(--font-mono)",
-        fontSize: "12px",
-        color: "var(--text-primary)",
-      }}
-    >
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "10px", padding: "10px 14px", fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-primary)" }}>
       {payload[0].name}: {formatCurrency(Number(payload[0].value), currency)}
     </div>
   );
 }
-
-// ── Main component ────────────────────────────────────────────────
 
 export function DashboardClient({
   stats,
@@ -121,657 +75,257 @@ export function DashboardClient({
   recentTransactions,
 }: Props) {
   const { currency } = useCurrency();
-
- const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
+  const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency;
 
   return (
-    <div
-      className="animate-fade-up"
-      style={{ display: "flex", flexDirection: "column", gap: "24px" }}
-    >
+    <>
+      <style>{`
+        /* ── Stat cards ── */
+        .dc-stat-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        /* ── Main two-column layout ── */
+        .dc-main-grid {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 16px;
+          align-items: start;
+        }
+        .dc-left  { display: flex; flex-direction: column; gap: 16px; }
+        .dc-right { display: flex; flex-direction: column; gap: 16px; }
 
-      {/* ── Stat Cards ─────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "12px",
-        }}
-      >
-        {[
-          {
-            label: "Total Balance",
-            value: formatCurrency(stats.totalBalance, currency),
-            sub: "Net all-time savings",
-            accent: "#e8ff47",
-            positive: true,
-          },
-          {
-            label: "Monthly Income",
-            value: formatCurrency(stats.monthlyIncome, currency),
-            sub: `${stats.incomeChange >= 0 ? "↑" : "↓"} ${Math.abs(
-              stats.incomeChange
-            )}% vs last month`,
-            accent: "#47ffe8",
-            positive: stats.incomeChange >= 0,
-          },
-          {
-            label: "Monthly Expenses",
-            value: formatCurrency(stats.monthlyExpenses, currency),
-            sub: `${stats.expenseChange <= 0 ? "↓" : "↑"} ${Math.abs(
-              stats.expenseChange
-            )}% vs last month`,
-            accent: "#4778ff",
-            positive: stats.expenseChange <= 0,
-          },
-          {
-            label: "Net Savings",
-            value: formatCurrency(stats.netSavings, currency),
-            sub:
-              stats.netSavings >= 0
-                ? "↑ On track"
-                : "↓ Overspending",
-            accent: "#a847ff",
-            positive: stats.netSavings >= 0,
-          },
-        ].map((card) => (
-          <div
-            key={card.label}
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              borderRadius: "16px",
-              padding: "16px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              transition: "border-color 0.2s, transform 0.2s",
-              cursor: "default",
-              minHeight: "110px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = card.accent;
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
+        /* ── Mobile ── */
+        @media (max-width: 640px) {
+          /* 2-column stat grid on mobile (4 cards → 2×2) */
+          .dc-stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+          /* Stack columns */
+          .dc-main-grid {
+            grid-template-columns: 1fr;
+          }
+          /* Chart legend wraps cleanly */
+          .dc-chart-legend {
+            flex-wrap: wrap;
+            gap: 10px !important;
+          }
+          /* Stat card value font smaller */
+          .dc-stat-value {
+            font-size: 16px !important;
+          }
+          /* Tighter card padding */
+          .dc-card {
+            padding: 16px !important;
+          }
+          .dc-stat-card {
+            padding: 14px !important;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .dc-stat-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+          }
+        }
+      `}</style>
+
+      <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column" }}>
+
+        {/* ── Stat Cards ── */}
+        <div className="dc-stat-grid">
+          {[
+            { label: "Total Balance",    value: formatCurrency(stats.totalBalance, currency),    sub: "Net all-time",                                                                     accent: "#e8ff47", positive: true },
+            { label: "Monthly Income",   value: formatCurrency(stats.monthlyIncome, currency),   sub: `${stats.incomeChange >= 0 ? "↑" : "↓"} ${Math.abs(stats.incomeChange)}% vs last`,  accent: "#47ffe8", positive: stats.incomeChange >= 0 },
+            { label: "Monthly Expenses", value: formatCurrency(stats.monthlyExpenses, currency), sub: `${stats.expenseChange <= 0 ? "↓" : "↑"} ${Math.abs(stats.expenseChange)}% vs last`, accent: "#4778ff", positive: stats.expenseChange <= 0 },
+            { label: "Net Savings",      value: formatCurrency(stats.netSavings, currency),      sub: stats.netSavings >= 0 ? "↑ On track" : "↓ Overspending",                          accent: "#a847ff", positive: stats.netSavings >= 0 },
+          ].map((card) => (
             <div
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: "60px",
-                height: "60px",
-                background: `radial-gradient(circle at top right, ${card.accent}33, transparent 70%)`,
-                pointerEvents: "none",
-              }}
-            />
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "10px",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                marginBottom: "8px",
-              }}
+              key={card.label}
+              className="dc-stat-card"
+              style={{ position: "relative", overflow: "hidden", borderRadius: "14px", padding: "20px", background: "var(--bg-card)", border: "1px solid var(--border)", transition: "border-color 0.2s, transform 0.2s", cursor: "default", display: "flex", flexDirection: "column", gap: "10px" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = card.accent; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              {card.label}
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(16px, 3vw, 24px)",
-                fontWeight: 800,
-                color: "var(--text-primary)",
-                letterSpacing: "-0.03em",
-                lineHeight: 1.1,
-                marginBottom: "8px",
-                wordBreak: "break-word",
-              }}
-            >
-              {card.value}
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "11px",
-                color: card.positive === false ? "#ff6b47" : card.accent,
-              }}
-            >
-              {card.sub}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Cash Flow Chart ────────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: "16px",
-          padding: "24px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "24px",
-            gap: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "11px",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                marginBottom: "4px",
-              }}
-            >
-              Cash Flow
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "20px",
-                fontWeight: 800,
-                color: "var(--text-primary)",
-                letterSpacing: "-0.03em",
-              }}
-            >
-              Last 6 Months
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: "16px" }}>
-            {[
-              { label: "Income",  color: "#e8ff47" },
-              { label: "Expense", color: "#4778ff" },
-            ].map((l) => (
-              <div
-                key={l.label}
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "2px",
-                    background: l.color,
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {l.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <ResponsiveContainer width="100%" height={200}>
-       <AreaChart data={monthlyData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
-            <defs>
-              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#e8ff47" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#e8ff47" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#4778ff" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#4778ff" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis
-              dataKey="month"
-              tick={{ fontFamily: "var(--font-mono)", fontSize: 11, fill: "var(--text-muted)" }}
-              axisLine={false}
-              tickLine={false}
-            />
-<YAxis
-  width={80}
-  tickMargin={6}
-  tick={{
-    fontFamily: "var(--font-mono)",
-    fontSize: 10,
-    fill: "var(--text-muted)",
-  }}
-  axisLine={false}
-  tickLine={false}
-  tickFormatter={(v: number) => {
-    if (v >= 1000000) return `${currencySymbol}${Math.round(v / 1000000)}M`;
-    if (v >= 1000) return `${currencySymbol}${Math.round(v / 1000)}k`;
-    return `${currencySymbol}${Math.round(v)}`;
-  }}
-/>
-            <Tooltip
-              content={(props) => (
-                <ChartTooltip
-                  active={props.active}
-                  label={props.label}
-                  payload={props.payload as ChartTooltipProps["payload"]}
-                  currency={currency}
-                />
-              )}
-            />
-            <Area
-              type="monotone"
-              dataKey="income"
-              name="Income"
-              stroke="#e8ff47"
-              strokeWidth={2}
-              fill="url(#incomeGrad)"
-            />
-            <Area
-              type="monotone"
-              dataKey="expense"
-              name="Expense"
-              stroke="#4778ff"
-              strokeWidth={2}
-              fill="url(#expenseGrad)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* ── Category Donut ─────────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: "16px",
-          padding: "24px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            marginBottom: "4px",
-          }}
-        >
-          Spending by
-        </p>
-        <p
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "20px",
-            fontWeight: 800,
-            color: "var(--text-primary)",
-            letterSpacing: "-0.03em",
-            marginBottom: "16px",
-          }}
-        >
-          Category
-        </p>
-
-        {categorySpending.length === 0 ? (
-          <p
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "13px",
-              color: "var(--text-muted)",
-              textAlign: "center",
-              paddingTop: "40px",
-            }}
-          >
-            No expenses this month
-          </p>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie
-                  data={categorySpending.map((entry) => ({
-                    ...entry,
-                    fill: entry.color,
-                  }))}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={72}
-                  paddingAngle={3}
-                  dataKey="value"
-                />
-                <Tooltip
-                  content={(props) => (
-                    <PieTooltip
-                      active={props.active}
-                      payload={props.payload as PieTooltipProps["payload"]}
-                      currency={currency}
-                    />
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "8px",
-                marginTop: "12px",
-              }}
-            >
-              {categorySpending.slice(0, 6).map((c) => (
-                <div
-                  key={c.name}
-                  style={{ display: "flex", alignItems: "center", gap: "7px" }}
-                >
-                  <span
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "2px",
-                      background: c.color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "11px",
-                      color: "var(--text-secondary)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {c.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── Recent Transactions ────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: "16px",
-          padding: "24px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "15px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-            }}
-          >
-            Recent Transactions
-          </p>
-          <Link
-            href="/transactions"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "12px",
-              color: "var(--text-muted)",
-              textDecoration: "none",
-              transition: "color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
-          >
-            View all →
-          </Link>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          {recentTransactions.length === 0 && (
-            <p
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "13px",
-                color: "var(--text-muted)",
-                textAlign: "center",
-                padding: "32px 0",
-              }}
-            >
-              No transactions yet
-            </p>
-          )}
-          {recentTransactions.map((t) => (
-            <div
-              key={t.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                padding: "10px 8px",
-                borderRadius: "10px",
-                transition: "background 0.15s",
-                cursor: "default",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <CategoryIcon
-                name={t.category?.name ?? ""}
-                color={t.category?.color ?? undefined}
-                size="md"
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                    marginBottom: "2px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {t.title}
-                </p>
-                <p
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {t.category?.name ?? "Uncategorized"} · {formatDate(t.date)}
-                </p>
-              </div>
-              <p
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: t.type === "INCOME" ? "#47ffe8" : "var(--text-primary)",
-                  flexShrink: 0,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {t.type === "INCOME" ? "+" : "-"}
-                {formatCurrency(t.amount, currency)}
+              <div style={{ position: "absolute", top: 0, right: 0, width: "80px", height: "80px", background: `radial-gradient(circle at top right, ${card.accent}22, transparent 70%)`, pointerEvents: "none" }} />
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{card.label}</p>
+              <p className="dc-stat-value" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(15px, 2vw, 22px)", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", lineHeight: 1.1, wordBreak: "break-word" }}>
+                {card.value}
               </p>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: card.positive === false ? "#ff6b47" : card.accent }}>{card.sub}</p>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* ── Budget Status ──────────────────────────────────────── */}
-      <div
-        style={{
-          borderRadius: "16px",
-          padding: "24px",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "15px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-            }}
-          >
-            Budget Status
-          </p>
-          <Link
-            href="/budgets"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "12px",
-              color: "var(--text-muted)",
-              textDecoration: "none",
-              transition: "color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
-          >
-            Manage →
-          </Link>
-        </div>
+        {/* ── Main grid ── */}
+        <div className="dc-main-grid">
 
-        {budgets.length === 0 ? (
-          <p
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "13px",
-              color: "var(--text-muted)",
-              textAlign: "center",
-              padding: "32px 0",
-            }}
-          >
-            No budgets set yet
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-            {budgets.map((b) => {
-              const pct = Math.min((b.spent / b.limit) * 100, 100);
-              const over = b.spent > b.limit;
-              return (
-                <div key={b.id}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "8px",
-                      gap: "8px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        minWidth: 0,
-                      }}
-                    >
-                      <CategoryIcon
-                        name={b.category?.name ?? ""}
-                        color={b.category?.color ?? undefined}
-                        size="sm"
-                      />
-                      <span
-                        style={{
-                          fontFamily: "var(--font-display)",
-                          fontSize: "13px",
-                          fontWeight: 600,
-                          color: "var(--text-primary)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {b.category.name}
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        color: over ? "#ff6b47" : "var(--text-muted)",
-                        flexShrink: 0,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {formatCurrency(b.spent, currency)} /{" "}
-                      {formatCurrency(b.limit, currency)}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      height: "5px",
-                      background: "rgba(255,255,255,0.07)",
-                      borderRadius: "3px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${pct}%`,
-                        borderRadius: "3px",
-                        background: over ? "#ff6b47" : b.category.color,
-                        transition: "width 0.8s ease",
-                      }}
-                    />
-                  </div>
-                  {over && (
-                    <p
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        color: "#ff6b47",
-                        marginTop: "4px",
-                      }}
-                    >
-                      ⚠ Over by {formatCurrency(b.spent - b.limit, currency)}
-                    </p>
-                  )}
+          {/* Left column */}
+          <div className="dc-left">
+
+            {/* Cash Flow Chart */}
+            <div className="dc-card" style={{ borderRadius: "14px", padding: "24px", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", gap: "12px" }}>
+                <div>
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>Cash Flow</p>
+                  <p style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em" }}>Last 6 Months</p>
                 </div>
-              );
-            })}
+                <div className="dc-chart-legend" style={{ display: "flex", gap: "14px", flexShrink: 0 }}>
+                  {[{ label: "Income", color: "#e8ff47" }, { label: "Expense", color: "#4778ff" }].map((l) => (
+                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: l.color }} />
+                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>{l.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={monthlyData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="#e8ff47" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#e8ff47" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="#4778ff" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#4778ff" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="month" tick={{ fontFamily: "var(--font-mono)", fontSize: 11, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+                  <YAxis width={80} tickMargin={6} tick={{ fontFamily: "var(--font-mono)", fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false}
+                    tickFormatter={(v: number) => {
+                      if (v >= 1000000) return `${currencySymbol}${Math.round(v / 1000000)}M`;
+                      if (v >= 1000) return `${currencySymbol}${Math.round(v / 1000)}k`;
+                      return `${currencySymbol}${Math.round(v)}`;
+                    }}
+                  />
+                  <Tooltip content={(props) => <ChartTooltip active={props.active} label={props.label} payload={props.payload as ChartTooltipProps["payload"]} currency={currency} />} />
+                  <Area type="monotone" dataKey="income" name="Income" stroke="#e8ff47" strokeWidth={2} fill="url(#incomeGrad)" />
+                  <Area type="monotone" dataKey="expense" name="Expense" stroke="#4778ff" strokeWidth={2} fill="url(#expenseGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Recent Transactions */}
+            <div className="dc-card" style={{ borderRadius: "14px", padding: "24px", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: 700, color: "var(--text-primary)" }}>Recent Transactions</p>
+                <Link href="/transactions" style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)", textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+                >
+                  View all →
+                </Link>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                {recentTransactions.length === 0 && (
+                  <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "var(--text-muted)", textAlign: "center", padding: "32px 0" }}>No transactions yet</p>
+                )}
+                {recentTransactions.map((t) => (
+                  <div key={t.id}
+                    style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 8px", borderRadius: "10px", transition: "background 0.15s", cursor: "default" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <CategoryIcon name={t.category?.name ?? ""} color={t.category?.color ?? undefined} size="md" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</p>
+                      <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>{t.category?.name ?? "Uncategorized"} · {formatDate(t.date)}</p>
+                    </div>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", fontWeight: 600, color: t.type === "INCOME" ? "#47ffe8" : "var(--text-primary)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                      {t.type === "INCOME" ? "+" : "-"}{formatCurrency(t.amount, currency)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Right column */}
+          <div className="dc-right">
+
+            {/* Category Donut */}
+            <div className="dc-card" style={{ borderRadius: "14px", padding: "24px", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>Spending by</p>
+              <p style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", marginBottom: "16px" }}>Category</p>
+              {categorySpending.length === 0 ? (
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "var(--text-muted)", textAlign: "center", paddingTop: "32px" }}>No expenses this month</p>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={150}>
+                    <PieChart>
+                      <Pie data={categorySpending.map((e) => ({ ...e, fill: e.color }))} cx="50%" cy="50%" innerRadius={44} outerRadius={64} paddingAngle={3} dataKey="value" />
+                      <Tooltip content={(props) => <PieTooltip active={props.active} payload={props.payload as PieTooltipProps["payload"]} currency={currency} />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "12px" }}>
+                    {categorySpending.slice(0, 5).map((c) => {
+                      const total = categorySpending.reduce((a, x) => a + x.value, 0);
+                      const pct = total > 0 ? Math.round((c.value / total) * 100) : 0;
+                      return (
+                        <div key={c.name} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: c.color, flexShrink: 0 }} />
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-secondary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</span>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", flexShrink: 0 }}>{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Budget Status */}
+            <div className="dc-card" style={{ borderRadius: "14px", padding: "24px", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+                <p style={{ fontFamily: "var(--font-display)", fontSize: "15px", fontWeight: 700, color: "var(--text-primary)" }}>Budget Status</p>
+                <Link href="/budgets" style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text-muted)", textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+                >
+                  Manage →
+                </Link>
+              </div>
+              {budgets.length === 0 ? (
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "var(--text-muted)", textAlign: "center", padding: "24px 0" }}>No budgets set yet</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {budgets.map((b) => {
+                    const pct = Math.min((b.spent / b.limit) * 100, 100);
+                    const over = b.spent > b.limit;
+                    return (
+                      <div key={b.id}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px", gap: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                            <CategoryIcon name={b.category?.name ?? ""} color={b.category?.color ?? undefined} size="sm" />
+                            <span style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.category.name}</span>
+                          </div>
+                          <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: over ? "#ff6b47" : "var(--text-muted)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                            {formatCurrency(b.spent, currency)} / {formatCurrency(b.limit, currency)}
+                          </span>
+                        </div>
+                        <div style={{ height: "4px", background: "rgba(255,255,255,0.07)", borderRadius: "2px", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${pct}%`, borderRadius: "2px", background: over ? "#ff6b47" : b.category.color, transition: "width 0.8s ease" }} />
+                        </div>
+                        {over && (
+                          <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "#ff6b47", marginTop: "4px" }}>
+                            ⚠ Over by {formatCurrency(b.spent - b.limit, currency)}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
