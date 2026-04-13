@@ -14,6 +14,7 @@ import {
   Menu,
   ChevronLeft,
   Bell,
+  Plus,
 } from "lucide-react";
 import { BudgetAlertToast } from "../ui/BudgetAlertToast";
 import Image from "next/image";
@@ -40,84 +41,56 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [connected, setConnected] = useState(false);
-
-  // Derived — always in sync with actual visible alerts, never drifts
   const alertCount = alerts.length;
-
   const activeAlertCategories = useRef<Set<string>>(new Set());
 
-  // SSE Connection
   useEffect(() => {
     let retryTimeout: ReturnType<typeof setTimeout>;
     let eventSource: EventSource;
 
     const connect = () => {
       eventSource = new EventSource("/api/sse");
-
-      eventSource.onopen = () => {
-        setConnected(true);
-      };
-
+      eventSource.onopen = () => setConnected(true);
       eventSource.onmessage = (e) => {
         let data: Record<string, unknown>;
-        try {
-          data = JSON.parse(e.data);
-        } catch {
-          return;
-        }
+        try { data = JSON.parse(e.data); } catch { return; }
 
-        if (data.type === "connected") {
-          setConnected(true);
-        }
+        if (data.type === "connected") setConnected(true);
 
         if (data.type === "budget_alert") {
           const categoryName = data.categoryName as string;
           const incoming: Alert = {
-            id: categoryName, // stable ID keyed by category name — no timestamp
+            id: categoryName,
             categoryName,
             spent: data.spent as number,
             limit: data.limit as number,
             overBy: data.overBy as number,
           };
-
           setAlerts((prev) => {
-            const existingIndex = prev.findIndex(
-              (a) => a.categoryName === categoryName
-            );
+            const existingIndex = prev.findIndex((a) => a.categoryName === categoryName);
             if (existingIndex !== -1) {
-              // Update in place if values changed
               const existing = prev[existingIndex];
-              if (
-                existing.spent === incoming.spent &&
-                existing.overBy === incoming.overBy
-              ) {
-                return prev; // no change
-              }
+              if (existing.spent === incoming.spent && existing.overBy === incoming.overBy) return prev;
               const updated = [...prev];
               updated[existingIndex] = incoming;
               return updated;
             }
-            // New category alert
             activeAlertCategories.current.add(categoryName);
             return [...prev, incoming];
           });
         }
 
-        // Auto-remove alerts for categories no longer over budget
         if (data.type === "budget_state") {
           const currentlyOver = new Set(data.overBudgetCategories as string[]);
           setAlerts((prev) => {
             const next = prev.filter((a) => currentlyOver.has(a.categoryName));
             activeAlertCategories.current.forEach((cat) => {
-              if (!currentlyOver.has(cat)) {
-                activeAlertCategories.current.delete(cat);
-              }
+              if (!currentlyOver.has(cat)) activeAlertCategories.current.delete(cat);
             });
             return next;
           });
         }
       };
-
       eventSource.onerror = () => {
         setConnected(false);
         eventSource.close();
@@ -135,7 +108,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener("transaction:added", handleTxnAdded);
-
     return () => {
       eventSource.close();
       clearTimeout(retryTimeout);
@@ -156,7 +128,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", height: "100dvh", overflow: "hidden", background: "var(--bg-base)" }}>
 
-      {/* ── Desktop Sidebar ── */}
+      {/* ── Desktop Sidebar — collapsible ── */}
       <aside
         className="desktop-sidebar"
         style={{
@@ -172,35 +144,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         }}
       >
         {/* Logo row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: sidebarOpen ? "space-between" : "center",
-            padding: "0 12px",
-            height: "56px",
-            borderBottom: "1px solid var(--border)",
-            flexShrink: 0,
-            gap: "8px",
-          }}
-        >
+        <div style={{
+          display: "flex", alignItems: "center",
+          justifyContent: sidebarOpen ? "space-between" : "center",
+          padding: "0 12px", height: "64px",
+          borderBottom: "1px solid var(--border)",
+          flexShrink: 0, gap: "8px",
+        }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden" }}>
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "9px",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 900,
-                fontSize: "14px",
-                color: "#080808",
-                flexShrink: 0,
-                letterSpacing: "-0.05em",
-              }}
-            >
+            <div style={{
+              width: "32px", height: "32px", borderRadius: "9px",
+              background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 900, fontSize: "14px", color: "#080808",
+              flexShrink: 0, letterSpacing: "-0.05em",
+            }}>
               S
             </div>
             {sidebarOpen && (
@@ -214,16 +172,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             )}
           </div>
-
           {sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(false)}
-              style={{
-                width: "26px", height: "26px", display: "flex", alignItems: "center",
-                justifyContent: "center", borderRadius: "7px",
-                border: "1px solid var(--border)", background: "transparent",
-                color: "var(--text-muted)", cursor: "pointer", flexShrink: 0,
-              }}
+              style={{ width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "7px", border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", flexShrink: 0 }}
             >
               <ChevronLeft size={13} />
             </button>
@@ -240,31 +192,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 href={href}
                 title={!sidebarOpen ? label : undefined}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
+                  display: "flex", alignItems: "center", gap: "10px",
                   padding: sidebarOpen ? "9px 10px" : "9px",
-                  borderRadius: "10px",
-                  textDecoration: "none",
+                  borderRadius: "10px", textDecoration: "none",
                   background: active ? "rgba(232,255,71,0.12)" : "transparent",
                   color: active ? "#e8ff47" : "var(--text-muted)",
                   transition: "background 0.15s, color 0.15s",
                   justifyContent: sidebarOpen ? "flex-start" : "center",
-                  position: "relative",
-                  whiteSpace: "nowrap",
+                  position: "relative", whiteSpace: "nowrap",
                 }}
-                onMouseEnter={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.color = "var(--text-secondary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "var(--text-muted)";
-                  }
-                }}
+                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "var(--text-secondary)"; } }}
+                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; } }}
               >
                 <Icon size={16} strokeWidth={active ? 2.5 : 1.8} style={{ flexShrink: 0 }} />
                 {sidebarOpen && (
@@ -273,26 +211,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   </span>
                 )}
                 {label === "Budgets" && alertCount > 0 && (
-                  <span
-                    style={{
-                      marginLeft: sidebarOpen ? "auto" : undefined,
-                      position: sidebarOpen ? "static" : "absolute",
-                      top: sidebarOpen ? undefined : "6px",
-                      right: sidebarOpen ? undefined : "6px",
-                      background: "#ff6b47",
-                      color: "#fff",
-                      fontSize: "9px",
-                      fontFamily: "var(--font-mono)",
-                      padding: sidebarOpen ? "1px 6px" : "0",
-                      width: sidebarOpen ? "auto" : "8px",
-                      height: sidebarOpen ? "auto" : "8px",
-                      borderRadius: "20px",
-                      fontWeight: 600,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <span style={{
+                    marginLeft: sidebarOpen ? "auto" : undefined,
+                    position: sidebarOpen ? "static" : "absolute",
+                    top: sidebarOpen ? undefined : "6px",
+                    right: sidebarOpen ? undefined : "6px",
+                    background: "#ff6b47", color: "#fff",
+                    fontSize: "9px", fontFamily: "var(--font-mono)",
+                    padding: sidebarOpen ? "1px 6px" : "0",
+                    width: sidebarOpen ? "auto" : "8px",
+                    height: sidebarOpen ? "auto" : "8px",
+                    borderRadius: "20px", fontWeight: 600,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
                     {sidebarOpen ? alertCount : ""}
                   </span>
                 )}
@@ -304,26 +235,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {/* Bottom section */}
         <div style={{ padding: "8px", borderTop: "1px solid var(--border)", flexShrink: 0 }}>
           {sidebarOpen && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px 10px",
-                borderRadius: "10px",
-                background: connected ? "rgba(71,255,232,0.05)" : "rgba(255,255,255,0.02)",
-                border: `1px solid ${connected ? "rgba(71,255,232,0.15)" : "var(--border)"}`,
-                marginBottom: "6px",
-              }}
-            >
-              <span
-                style={{
-                  width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0,
-                  background: connected ? "#47ffe8" : "var(--text-muted)",
-                  boxShadow: connected ? "0 0 6px #47ffe8" : "none",
-                }}
-                className={connected ? "pulse-dot" : ""}
-              />
+            <div style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              padding: "8px 10px", borderRadius: "10px",
+              background: connected ? "rgba(71,255,232,0.05)" : "rgba(255,255,255,0.02)",
+              border: `1px solid ${connected ? "rgba(71,255,232,0.15)" : "var(--border)"}`,
+              marginBottom: "6px",
+            }}>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0, background: connected ? "#47ffe8" : "var(--text-muted)", boxShadow: connected ? "0 0 6px #47ffe8" : "none" }} className={connected ? "pulse-dot" : ""} />
               <div>
                 <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: connected ? "#47ffe8" : "var(--text-muted)", fontWeight: 600, lineHeight: 1 }}>
                   {connected ? "Live Alerts" : "Connecting..."}
@@ -334,22 +253,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           )}
-
           {!sidebarOpen && (
             <button
               onClick={() => setSidebarOpen(true)}
               title="Expand sidebar"
-              style={{
-                width: "100%", height: "36px", display: "flex", alignItems: "center",
-                justifyContent: "center", borderRadius: "10px", border: "1px solid var(--border)",
-                background: "transparent", color: "var(--text-muted)", cursor: "pointer",
-                marginBottom: "6px",
-              }}
+              style={{ width: "100%", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px", border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", marginBottom: "6px" }}
             >
               <Menu size={14} />
             </button>
           )}
-
           <button
             onClick={() => signOut({ callbackUrl: "/auth/login" })}
             style={{
@@ -363,9 +275,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
           >
             <LogOut size={14} style={{ flexShrink: 0 }} />
-            {sidebarOpen && (
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: "12px" }}>Sign out</span>
-            )}
+            {sidebarOpen && <span style={{ fontFamily: "var(--font-mono)", fontSize: "12px" }}>Sign out</span>}
           </button>
         </div>
       </aside>
@@ -373,132 +283,209 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* ── Main area ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
 
-        {/* Header */}
-        <header
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 16px",
-            height: "56px",
-            borderBottom: "1px solid var(--border)",
-            background: "var(--bg-card)",
-            flexShrink: 0,
-            gap: "12px",
-            zIndex: 5,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+        {/* ── Header — no bottom border, centered title on desktop ── */}
+        <header style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 28px",
+          height: "64px",
+          background: "var(--bg-base)",
+          flexShrink: 0,
+          gap: "16px",
+          position: "relative",
+        }}>
+
+          {/* Left: mobile logo + title (mobile only) */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
             <div
               className="mobile-only"
-              style={{
-                width: "28px", height: "28px", borderRadius: "8px",
-                background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: "12px", color: "#080808", flexShrink: 0,
-              }}
+              style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg, #e8ff47, #47ffe8)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "12px", color: "#080808", flexShrink: 0 }}
             >
               S
             </div>
+            {/* Mobile page title */}
+    <div
+  className="mobile-only"
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    minWidth: 0,
+    height: "100%",
+  }}
+>
+  <h1
+    style={{
+      fontFamily: "var(--font-display)",
+      fontSize: "15px",
+      fontWeight: 800,
+      color: "var(--text-primary)",
+      letterSpacing: "-0.03em",
+      lineHeight: 1.1,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    }}
+  >
+    {currentPage?.label ?? "Dashboard"}
+  </h1>
 
-            <div style={{ minWidth: 0 }}>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "16px", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.03em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>
-                {currentPage?.label ?? "Dashboard"}
-              </h1>
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", marginTop: "2px", whiteSpace: "nowrap" }}>
-                {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-              </p>
-            </div>
+  <p
+    style={{
+      fontFamily: "var(--font-mono)",
+      fontSize: "10px",
+      color: "var(--text-muted)",
+      marginTop: "4px",
+      lineHeight: 1,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    }}
+  >
+    {new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+    })}
+  </p>
+</div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          {/* Center: page title — desktop only, absolutely centered */}
+          <div
+            className="desktop-only"
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              pointerEvents: "none",
+            }}
+          >
+            <h1 style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "16px",
+              fontWeight: 800,
+              color: "var(--text-primary)",
+              letterSpacing: "-0.035em",
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+            }}>
+              {currentPage?.label ?? "Dashboard"}
+            </h1>
+            <p style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "10px",
+              color: "var(--text-muted)",
+              marginTop: "3px",
+              whiteSpace: "nowrap",
+            }}>
+              {new Date().toLocaleDateString("en-US", { weekday: "short", month: "long", day: "numeric" })}
+            </p>
+          </div>
+
+          {/* Right: actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, flex: 1, justifyContent: "flex-end" }}>
+
+            {/* Alert bell — mobile */}
             {alertCount > 0 && (
               <div className="mobile-only" style={{ position: "relative" }}>
-                <button
-                  style={{
-                    width: "34px", height: "34px", display: "flex", alignItems: "center",
-                    justifyContent: "center", borderRadius: "9px", border: "1px solid var(--border)",
-                    background: "transparent", color: "var(--text-muted)", cursor: "pointer",
-                  }}
-                >
+                <button style={{ width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "9px", border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
                   <Bell size={14} />
                 </button>
-                <span
-                  style={{
-                    position: "absolute", top: "4px", right: "4px",
-                    width: "8px", height: "8px", borderRadius: "50%",
-                    background: "#ff6b47",
-                  }}
-                />
+                <span style={{ position: "absolute", top: "4px", right: "4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff6b47" }} />
               </div>
             )}
 
+            {/* Alert bell — desktop */}
+            {alertCount > 0 && (
+              <div className="desktop-only" style={{ position: "relative" }}>
+                <button
+                  style={{ width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "9px", border: "1px solid rgba(255,107,71,0.3)", background: "rgba(255,107,71,0.08)", color: "#ff6b47", cursor: "pointer", transition: "all 0.2s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,107,71,0.15)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,107,71,0.08)"; }}
+                >
+                  <Bell size={14} />
+                </button>
+                <span style={{ position: "absolute", top: "-3px", right: "-3px", minWidth: "16px", height: "16px", borderRadius: "8px", background: "#ff6b47", color: "#fff", fontSize: "9px", fontFamily: "var(--font-mono)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid var(--bg-base)" }}>
+                  {alertCount}
+                </span>
+              </div>
+            )}
+
+            {/* Add transaction */}
             <Link
               href="/transactions"
               style={{
-                display: "flex", alignItems: "center", gap: "5px",
-                padding: "7px 13px", borderRadius: "9px",
+                display: "flex", alignItems: "center", gap: "6px",
+                padding: "8px 16px", borderRadius: "9px",
                 background: "#e8ff47", color: "#080808",
                 fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "12px",
-                textDecoration: "none", whiteSpace: "nowrap",
-                transition: "opacity 0.15s",
+                textDecoration: "none", whiteSpace: "nowrap", transition: "opacity 0.15s",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              + Add
+              <Plus size={13} />
+              <span>Add</span>
             </Link>
 
+            {/* Divider — desktop only */}
+<div
+  style={{
+    width: "2px",
+    height: "22px",
+    background: "rgba(255,255,255,0.18)",
+    borderRadius: "2px",
+    flexShrink: 0,
+  }}
+/>
+
+            {/* Avatar + name */}
             <Link
               href="/settings"
+              title="Settings"
               style={{
-                width: "32px", height: "32px", borderRadius: "9px", overflow: "hidden",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0, textDecoration: "none", transition: "opacity 0.15s",
+                display: "flex", alignItems: "center", gap: "8px",
+                padding: "4px",
+                borderRadius: "10px",
+                textDecoration: "none",
                 border: "1px solid var(--border)",
+                transition: "border-color 0.2s, background 0.2s",
+                flexShrink: 0,
               }}
-              title="Profile Settings"
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "transparent"; }}
             >
-              {status === "loading" ? (
-                <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.06)" }} />
-              ) : session?.user?.avatarUrl ? (
-                <Image
-                  src={session.user.avatarUrl}
-                  alt="Avatar"
-                  width={32}
-                  height={32}
-                  loading="eager"
-                  priority
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "100%", height: "100%",
-                    background: "linear-gradient(135deg, #e8ff47, #47ffe8)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "13px", color: "#080808",
-                  }}
-                >
-                  {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
-                </div>
-              )}
+              <div style={{ width: "26px", height: "26px", borderRadius: "7px", overflow: "hidden", flexShrink: 0 }}>
+                {status === "loading" ? (
+                  <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.06)" }} />
+                ) : session?.user?.avatarUrl ? (
+                  <Image src={session.user.avatarUrl} alt="Avatar" width={26} height={26} loading="eager" priority style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #e8ff47, #47ffe8)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "11px", color: "#080808" }}>
+                    {session?.user?.name?.[0]?.toUpperCase() ?? "U"}
+                  </div>
+                )}
+              </div>
+              <span className="desktop-only" style={{ fontFamily: "var(--font-display)", fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap", paddingRight: "6px" }}>
+                {session?.user?.name?.split(" ")[0] ?? "Account"}
+              </span>
             </Link>
           </div>
         </header>
 
         {/* Page content */}
-        <main
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            overflowX: "hidden",
-            padding: "20px 20px 88px 20px",
-            boxSizing: "border-box",
-          }}
-        >
+        <main style={{
+          flex: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          padding: "24px 28px 88px 28px",
+          boxSizing: "border-box",
+        }}>
           {children}
         </main>
       </div>
@@ -518,40 +505,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
-            <Link
-              key={href}
-              href={href}
-              style={{
-                display: "flex", flexDirection: "column", alignItems: "center",
-                justifyContent: "center", gap: "3px", padding: "6px 10px",
-                borderRadius: "10px", textDecoration: "none",
-                color: active ? "#e8ff47" : "var(--text-muted)",
-                transition: "color 0.15s", minWidth: "48px",
-                position: "relative", flex: 1,
-              }}
+            <Link key={href} href={href}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3px", padding: "6px 10px", borderRadius: "10px", textDecoration: "none", color: active ? "#e8ff47" : "var(--text-muted)", transition: "color 0.15s", minWidth: "48px", position: "relative", flex: 1 }}
             >
-              {active && (
-                <span
-                  style={{
-                    position: "absolute", top: "2px", left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "4px", height: "4px", borderRadius: "50%",
-                    background: "#e8ff47",
-                  }}
-                />
-              )}
+              {active && <span style={{ position: "absolute", top: "2px", left: "50%", transform: "translateX(-50%)", width: "4px", height: "4px", borderRadius: "50%", background: "#e8ff47" }} />}
               <Icon size={19} strokeWidth={active ? 2.5 : 1.8} />
               <span style={{ fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: active ? 700 : 500, whiteSpace: "nowrap" }}>
                 {label === "Transactions" ? "Txns" : label}
               </span>
               {label === "Budgets" && alertCount > 0 && (
-                <span
-                  style={{
-                    position: "absolute", top: "4px", right: "8px",
-                    width: "7px", height: "7px", borderRadius: "50%",
-                    background: "#ff6b47", border: "1px solid var(--bg-card)",
-                  }}
-                />
+                <span style={{ position: "absolute", top: "4px", right: "8px", width: "7px", height: "7px", borderRadius: "50%", background: "#ff6b47", border: "1px solid var(--bg-card)" }} />
               )}
             </Link>
           );
@@ -559,19 +522,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Toast alerts */}
-      <div
-        style={{
-          position: "fixed", top: "68px", right: "16px", zIndex: 200,
-          display: "flex", flexDirection: "column", gap: "10px",
-          maxWidth: "320px", width: "calc(100vw - 32px)", pointerEvents: "none",
-        }}
-      >
+      <div style={{ position: "fixed", top: "76px", right: "16px", zIndex: 200, display: "flex", flexDirection: "column", gap: "10px", maxWidth: "320px", width: "calc(100vw - 32px)", pointerEvents: "none" }}>
         {alerts.map((alert) => (
           <div key={alert.id} style={{ pointerEvents: "all" }}>
-            <BudgetAlertToast
-              alert={alert}
-              onDismiss={() => dismissAlert(alert.id)}
-            />
+            <BudgetAlertToast alert={alert} onDismiss={() => dismissAlert(alert.id)} />
           </div>
         ))}
       </div>
