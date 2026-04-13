@@ -175,140 +175,95 @@ export function SettingsClient({
 
   return (
     <>
-   
-   <style>{`
-  .sc-shell { width: 100%; display: flex; justify-content: center; }
-  .sc-inner { width: 100%; max-width: 900px; display: flex; gap: 24px; align-items: flex-start; }
-  .sc-sidebar {
-    width: 220px; flex-shrink: 0; border-radius: 16px;
-    background: var(--bg-card); border: 1px solid var(--border);
-    padding: 8px; position: sticky; top: 20px;
-  }
-  .sc-sidebar-nav { display: flex; flex-direction: column; }
-  .sc-content { flex: 1; min-width: 0; }
-  .sc-panel { border-radius: 16px; padding: 32px; background: var(--bg-card); border: 1px solid var(--border); }
-  .sc-panel-danger { border-color: rgba(255,107,71,0.2) !important; }
-  .sc-profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .sc-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .sc-appear-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .sc-avatar-row { display: flex; align-items: center; gap: 20px; padding: 20px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); margin-bottom: 24px; }
-  .sc-action-row { display: flex; align-items: center; justify-content: space-between; }
-  .sc-save-row { display: flex; justify-content: flex-end; padding-top: 4px; }
+      <style>{`
+        .sc-shell { width: 100%; display: flex; justify-content: center; }
+        .sc-inner { width: 100%; max-width: 900px; display: flex; gap: 24px; align-items: flex-start; }
+        .sc-sidebar {
+          width: 220px; flex-shrink: 0; border-radius: 16px;
+          background: var(--bg-card); border: 1px solid var(--border);
+          padding: 8px; position: sticky; top: 20px;
+        }
+        .sc-sidebar-nav { display: flex; flex-direction: column; }
+        .sc-content { flex: 1; min-width: 0; }
+        .sc-panel { border-radius: 16px; padding: 32px; background: var(--bg-card); border: 1px solid var(--border); }
+        .sc-panel-danger { border-color: rgba(255,107,71,0.2) !important; }
+        .sc-profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .sc-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .sc-appear-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .sc-avatar-row { display: flex; align-items: center; gap: 20px; padding: 20px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); margin-bottom: 24px; }
+        .sc-action-row { display: flex; align-items: center; justify-content: space-between; }
+        .sc-save-row { display: flex; justify-content: flex-end; padding-top: 4px; }
+        .sc-appear-preview { width: 100%; height: 64px; border-radius: 8px; margin-bottom: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 4px; padding: 8px; box-sizing: border-box; }
 
-  @media (max-width: 640px) {
-    .sc-inner {
-      flex-direction: column;
-      gap: 10px;
-      padding: 0 12px;
-    }
+        @media (max-width: 640px) {
+          .sc-inner {
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 4px;
+          }
+          .sc-sidebar {
+            width: 100%;
+            position: static;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            padding: 6px;
+            overflow: hidden;
+          }
+          .sc-sidebar-identity { display: none !important; }
+          .sc-sidebar-nav {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+          }
+          .sc-nav-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            text-align: center !important;
+            padding: 10px 6px !important;
+            border-radius: 10px !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+            font-size: 11px !important;
+          }
+          .sc-nav-label { font-size: 11px !important; }
+          .sc-nav-chevron { display: none !important; }
+          .sc-panel { padding: 16px !important; border-radius: 12px !important; }
+          .sc-content { width: 100%; overflow-x: hidden; }
+          .sc-profile-grid,
+          .sc-cat-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
 
-    /* Sidebar → horizontal scroll pills */
-    .sc-sidebar {
-      width: 100%;
-      position: static;
-      border-radius: 12px;
-      margin-bottom: 6px;
-      padding: 6px;
-      overflow: hidden;
-    }
+          /* Appearance: side by side rows instead of cards with previews */
+          .sc-appear-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+          .sc-appear-card {
+            flex-direction: row !important;
+            align-items: center !important;
+            padding: 14px 16px !important;
+            gap: 14px !important;
+          }
+          .sc-appear-preview { display: none !important; }
+          .sc-appear-card-text { flex: 1 !important; }
 
-    .sc-sidebar-identity { display: none !important; }
-
-   .sc-sidebar-nav {
-  flex-direction: row !important;
-  overflow-x: auto;
-  gap: 6px;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 6px;
-}
-
-/* Show subtle scrollbar so users know it scrolls */
-.sc-sidebar-nav {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-/* Make buttons fill grid nicely */
-.sc-nav-btn {
-  width: 100% !important;
-  justify-content: center !important;
-  text-align: center !important;
-  padding: 10px !important;
-  border-radius: 10px !important;
-}
-
-/* Hide arrow */
-.sc-nav-chevron {
-  display: none !important;
-}
-
-    /* Panels tighter + safer spacing */
-    .sc-panel {
-      padding: 16px !important;
-      border-radius: 12px !important;
-    }
-
-    /* Prevent overflow issues */
-    .sc-content {
-      width: 100%;
-      overflow-x: hidden;
-    }
-
-    /* Grids → single column */
-    .sc-profile-grid,
-    .sc-cat-grid,
-    .sc-appear-grid {
-      grid-template-columns: 1fr !important;
-      gap: 12px !important;
-    }
-
-    /* Avatar → cleaner stacking */
-    .sc-avatar-row {
-      flex-direction: column;
-      align-items: flex-start !important;
-      gap: 12px !important;
-      padding: 14px !important;
-    }
-
-    /* Buttons full width */
-    .sc-save-row {
-      justify-content: stretch !important;
-    }
-
-    .sc-save-btn {
-      width: 100% !important;
-    }
-
-    /* Action rows stack better */
-    .sc-action-row {
-      flex-direction: column !important;
-      align-items: stretch !important;
-      gap: 12px !important;
-    }
-
-    .sc-action-btn {
-      width: 100% !important;
-      margin-left: 0 !important;
-    }
-
-    /* Category items spacing */
-    .sc-cat-grid > div > div {
-      padding: 10px 12px !important;
-    }
-
-    /* Modal improvements */
-    .sc-modal {
-      padding: 12px !important;
-    }
-
-    /* Inputs feel less cramped */
-    input, select {
-      font-size: 14px !important;
-      padding: 12px 14px !important;
-    }
-  }
-`}</style>
+          .sc-avatar-row {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px !important;
+            padding: 14px !important;
+          }
+          .sc-save-row { justify-content: stretch !important; }
+          .sc-save-btn { width: 100% !important; }
+          .sc-action-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 12px !important;
+          }
+          .sc-action-btn { width: 100% !important; margin-left: 0 !important; }
+          .sc-cat-grid > div > div { padding: 10px 12px !important; }
+          input, select { font-size: 14px !important; }
+        }
+      `}</style>
 
       <div className="sc-shell animate-fade-up">
         <div className="sc-inner">
@@ -373,7 +328,7 @@ export function SettingsClient({
                     }}
                   >
                     <Icon size={14} strokeWidth={active ? 2.5 : 1.8} style={{ flexShrink: 0 }} />
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: active ? 700 : 500, flex: 1 }}>{label}</span>
+                    <span className="sc-nav-label" style={{ fontFamily: "var(--font-display)", fontSize: "13px", fontWeight: active ? 700 : 500, flex: 1 }}>{label}</span>
                     <ChevronRight size={12} className="sc-nav-chevron" style={{ flexShrink: 0, opacity: active ? 0.5 : 0 }} />
                   </button>
                 );
@@ -544,17 +499,38 @@ export function SettingsClient({
                   ].map((t) => {
                     const active = mounted ? theme === t.value : t.value === "dark";
                     return (
-                      <button key={t.value} onClick={() => setTheme(t.value as "dark" | "light")}
-                        style={{ display: "flex", flexDirection: "column", padding: "20px", borderRadius: "12px", cursor: "pointer", transition: "all 0.2s", textAlign: "left", border: `1px solid ${active ? "rgba(232,255,71,0.35)" : "var(--border)"}`, background: active ? "rgba(232,255,71,0.05)" : "rgba(255,255,255,0.02)", width: "100%", boxSizing: "border-box" }}
+                      <button
+                        key={t.value}
+                        onClick={() => setTheme(t.value as "dark" | "light")}
+                        className="sc-appear-card"
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          padding: "20px",
+                          borderRadius: "12px",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          textAlign: "left",
+                          border: `1px solid ${active ? "rgba(232,255,71,0.35)" : "var(--border)"}`,
+                          background: active ? "rgba(232,255,71,0.05)" : "rgba(255,255,255,0.02)",
+                          width: "100%",
+                          boxSizing: "border-box",
+                        }}
                         onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
                         onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = "var(--border)"; }}
                       >
-                        <div style={{ width: "100%", height: "64px", borderRadius: "8px", marginBottom: "14px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: "4px", padding: "8px", background: t.preview[0], boxSizing: "border-box" }}>
+                        {/* Preview — hidden on mobile via CSS */}
+                        <div
+                          className="sc-appear-preview"
+                          style={{ background: t.preview[0] }}
+                        >
                           <div style={{ height: "8px", borderRadius: "3px", background: t.preview[1], width: "60%" }} />
                           <div style={{ height: "8px", borderRadius: "3px", background: t.preview[2], width: "80%" }} />
                           <div style={{ height: "8px", borderRadius: "3px", background: t.preview[1], width: "40%" }} />
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+                        {/* Label row */}
+                        <div className="sc-appear-card-text" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
                           <div>
                             <p style={{ fontFamily: "var(--font-display)", fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", marginBottom: "2px" }}>{t.label}</p>
                             <p style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>{t.sub}</p>
