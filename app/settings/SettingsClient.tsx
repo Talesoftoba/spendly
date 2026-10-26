@@ -399,7 +399,7 @@ export function SettingsClient({
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Currency</label>
+                      <label style={labelStyle}>Currency Change</label>
                       <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
                         <option value="USD">USD ($) — US Dollar</option>
                         <option value="EUR">EUR (€) — Euro</option>
